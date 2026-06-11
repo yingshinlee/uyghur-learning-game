@@ -12,7 +12,7 @@
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{
-    font-family:"PingFang TC","Microsoft JhengHei",sans-serif;
+    font-family:"PingFang TC","Hiragino Sans","Microsoft JhengHei",sans-serif;
     background:linear-gradient(135deg,var(--bg1),var(--bg2));
     min-height:100vh;color:var(--text);
   }
@@ -21,10 +21,15 @@
     direction:rtl;unicode-bidi:isolate;
   }
   .wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px;}
-  header{display:flex;justify-content:space-between;align-items:center;padding:10px 0 24px;}
-  header h1{font-size:1.25rem;color:var(--gold);letter-spacing:1px;}
+  header{display:flex;justify-content:space-between;align-items:center;padding:10px 0 24px;flex-wrap:wrap;gap:8px;}
+  header h1{font-size:1.2rem;color:var(--gold);letter-spacing:1px;}
+  .hright{display:flex;gap:8px;align-items:center;}
   .xpbox{background:rgba(255,255,255,.08);border-radius:20px;padding:6px 14px;font-size:.85rem;}
   .xpbox b{color:var(--gold);}
+  .langbtn{
+    background:rgba(255,211,105,.15);border:1px solid var(--gold);color:var(--gold);
+    border-radius:20px;padding:6px 14px;font-size:.85rem;cursor:pointer;font-family:inherit;
+  }
 
   /* ── 主選單 ── */
   .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
@@ -62,7 +67,7 @@
   .qcard{
     background:rgba(255,255,255,.07);border-radius:18px;padding:30px 22px;text-align:center;margin-bottom:20px;
   }
-  .qcard .label{font-size:.85rem;color:var(--dim);margin-bottom:14px;}
+  .qcard .label{font-size:.85rem;color:var(--dim);margin-bottom:14px;line-height:1.6;}
   .qcard .big{font-size:3.2rem;line-height:1.4;}
   .qcard .big.uy{font-size:3.6rem;}
   .qcard .sub{font-size:1rem;color:var(--dim);margin-top:10px;}
@@ -85,9 +90,7 @@
   /* ── 翻翻樂 ── */
   .board{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
   @media(max-width:520px){.board{grid-template-columns:repeat(4,1fr);gap:6px;}}
-  .tile{
-    aspect-ratio:3/4;perspective:600px;cursor:pointer;
-  }
+  .tile{aspect-ratio:3/4;perspective:600px;cursor:pointer;}
   .tile-inner{
     position:relative;width:100%;height:100%;transition:transform .35s;transform-style:preserve-3d;
   }
@@ -97,16 +100,14 @@
     backface-visibility:hidden;padding:6px;text-align:center;
   }
   .face.back{background:linear-gradient(135deg,var(--accent),#903749);font-size:1.6rem;}
-  .face.front{background:var(--card);transform:rotateY(180deg);font-size:1rem;line-height:1.3;border:1px solid rgba(255,255,255,.18);}
+  .face.front{background:var(--card);transform:rotateY(180deg);font-size:.95rem;line-height:1.3;border:1px solid rgba(255,255,255,.18);}
   .face.front .uy{font-size:1.25rem;}
   .tile.done .face.front{background:rgba(78,204,163,.3);border-color:var(--ok);}
   .tile.done{cursor:default;}
 
   /* ── 學習頁 ── */
   .grid-letters{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
-  .lcard{
-    background:rgba(255,255,255,.07);border-radius:12px;padding:14px 10px;text-align:center;
-  }
+  .lcard{background:rgba(255,255,255,.07);border-radius:12px;padding:14px 10px;text-align:center;}
   .lcard .uy{font-size:2.2rem;color:var(--gold);display:block;}
   .lcard .latin{font-size:1rem;margin-top:4px;}
   .lcard .ipa{font-size:.8rem;color:var(--dim);}
@@ -138,50 +139,24 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>📚 大眾維語・學習小遊戲</h1>
-    <div class="xpbox">⭐ 經驗值 <b id="xpVal">0</b>｜Lv.<b id="lvVal">1</b></div>
+    <h1 id="appTitle"></h1>
+    <div class="hright">
+      <button class="langbtn" id="langBtn" onclick="toggleLang()"></button>
+      <div class="xpbox">⭐ <span id="xpLabel"></span> <b id="xpVal">0</b>｜Lv.<b id="lvVal">1</b></div>
+    </div>
   </header>
 
   <!-- ════ 主選單 ════ -->
   <div id="view-home">
-    <div class="intro">
-      <b>ياخشىمۇسىز؟</b>（Yaxshimusiz? 您好嗎？）<br>
-      本遊戲內容取自《大眾維語》（新疆大學出版社）第 1～25 課：32 個字母、約 100 個生詞與常用會話。
-      建議順序：先到「字母表」和「單字本」預習，再開始挑戰！
-    </div>
-    <div class="menu">
-      <div class="mcard" onclick="showStudyLetters()">
-        <div class="emoji">📖</div><h2>字母表（預習）</h2>
-        <p>瀏覽 32 個維吾爾文字母、拉丁轉寫與國際音標。對應課本第 1～12 課。</p>
-      </div>
-      <div class="mcard" onclick="showWordbook()">
-        <div class="emoji">📒</div><h2>單字本（預習）</h2>
-        <p>依主題瀏覽課本生詞：家人、職業、物品、數字、時間……</p>
-      </div>
-      <div class="mcard" onclick="startLetterQuiz()">
-        <div class="emoji">🔠</div><h2>字母挑戰</h2>
-        <p>看字母選讀音、看讀音選字母，共 10 題。熟記字母是第一步！</p>
-      </div>
-      <div class="mcard" onclick="showCatPick('quiz')">
-        <div class="emoji">✏️</div><h2>單字測驗</h2>
-        <p>維譯中、中譯維混合選擇題，有三條命，連對有加分！</p>
-      </div>
-      <div class="mcard" onclick="showCatPick('memory')">
-        <div class="emoji">🃏</div><h2>單字翻翻樂</h2>
-        <p>翻牌配對：維吾爾文 ↔ 中文。翻次越少星星越多！</p>
-      </div>
-      <div class="mcard" onclick="startDialogue()">
-        <div class="emoji">💬</div><h2>會話挑戰</h2>
-        <p>情境對話題：有人跟你打招呼，你該怎麼回？對應第 13～25 課。</p>
-      </div>
-    </div>
+    <div class="intro" id="introBox"></div>
+    <div class="menu" id="menuBox"></div>
   </div>
 
   <!-- ════ 字母表 ════ -->
   <div id="view-letters" class="hidden">
     <div class="topbar">
-      <button class="btn ghost" onclick="goHome()">← 回主選單</button>
-      <span class="pill">維吾爾文 32 字母（第 1～12 課）</span>
+      <button class="btn ghost back-btn" onclick="goHome()"></button>
+      <span class="pill" id="lettersPill"></span>
     </div>
     <div class="grid-letters" id="letterGrid"></div>
   </div>
@@ -189,8 +164,8 @@
   <!-- ════ 單字本 ════ -->
   <div id="view-wordbook" class="hidden">
     <div class="topbar">
-      <button class="btn ghost" onclick="goHome()">← 回主選單</button>
-      <span class="pill">課本生詞（第 13～25 課）</span>
+      <button class="btn ghost back-btn" onclick="goHome()"></button>
+      <span class="pill" id="wordbookPill"></span>
     </div>
     <div id="wordbookBody"></div>
   </div>
@@ -198,21 +173,21 @@
   <!-- ════ 類別選擇 ════ -->
   <div id="view-cat" class="hidden">
     <div class="topbar">
-      <button class="btn ghost" onclick="goHome()">← 回主選單</button>
+      <button class="btn ghost back-btn" onclick="goHome()"></button>
       <span class="pill" id="catTitle"></span>
     </div>
-    <p style="color:var(--dim);margin-bottom:8px;">選一個單字範圍：</p>
+    <p style="color:var(--dim);margin-bottom:8px;" id="catPrompt"></p>
     <div class="cats" id="catList"></div>
-    <button class="btn gold" id="catGo">開始！</button>
+    <button class="btn gold" id="catGo"></button>
   </div>
 
   <!-- ════ 測驗（字母／單字／會話共用） ════ -->
   <div id="view-quiz" class="hidden">
     <div class="topbar">
-      <button class="btn ghost" onclick="goHome()">✕ 放棄</button>
+      <button class="btn ghost" id="quitBtn" onclick="goHome()"></button>
       <span class="pill" id="quizInfo"></span>
       <span class="pill hearts" id="quizHearts"></span>
-      <span class="pill">得分 <b id="quizScore">0</b></span>
+      <span class="pill"><span id="scoreLabel"></span> <b id="quizScore">0</b></span>
     </div>
     <div class="progress"><i id="quizProg"></i></div>
     <div class="qcard">
@@ -227,9 +202,9 @@
   <!-- ════ 翻翻樂 ════ -->
   <div id="view-memory" class="hidden">
     <div class="topbar">
-      <button class="btn ghost" onclick="goHome()">✕ 放棄</button>
-      <span class="pill">翻牌數 <b id="memMoves">0</b></span>
-      <span class="pill">已配對 <b id="memPairs">0</b>／8</span>
+      <button class="btn ghost" id="memQuit" onclick="goHome()"></button>
+      <span class="pill"><span id="movesLabel"></span> <b id="memMoves">0</b></span>
+      <span class="pill"><span id="pairsLabel"></span> <b id="memPairs">0</b>／8</span>
     </div>
     <div class="board" id="memBoard"></div>
   </div>
@@ -240,13 +215,83 @@
       <div class="stars" id="resStars"></div>
       <h2 id="resTitle"></h2>
       <p id="resDetail"></p>
-      <button class="btn gold" id="resRetry">再玩一次</button>
-      <button class="btn ghost" onclick="goHome()">回主選單</button>
+      <button class="btn gold" id="resRetry"></button>
+      <button class="btn ghost" id="resHome" onclick="goHome()"></button>
     </div>
   </div>
 </div>
 
 <script>
+/* ═══════════════ 介面文字（中／日） ═══════════════ */
+const UI={
+zh:{
+  title:"📚 大眾維語・學習小遊戲",
+  htmlLang:"zh-Hant",
+  langBtn:"🌐 日本語",
+  xpLabel:"經驗值",
+  intro:`<b>ياخشىمۇسىز؟</b>（Yaxshimusiz? 您好嗎？）<br>
+    本遊戲內容取自《大眾維語》（新疆大學出版社）第 1～25 課：32 個字母、約 100 個生詞與常用會話。
+    建議順序：先到「字母表」和「單字本」預習，再開始挑戰！`,
+  menu:[
+    {e:"📖",t:"字母表（預習）",d:"瀏覽 32 個維吾爾文字母、拉丁轉寫與國際音標。對應課本第 1～12 課。",f:"showStudyLetters()"},
+    {e:"📒",t:"單字本（預習）",d:"依主題瀏覽課本生詞：家人、職業、物品、數字、時間……",f:"showWordbook()"},
+    {e:"🔠",t:"字母挑戰",d:"看字母選讀音、看讀音選字母，共 10 題。熟記字母是第一步！",f:"startLetterQuiz()"},
+    {e:"✏️",t:"單字測驗",d:"維譯中、中譯維混合選擇題，有三條命，連對有加分！",f:"showCatPick('quiz')"},
+    {e:"🃏",t:"單字翻翻樂",d:"翻牌配對：維吾爾文 ↔ 中文。翻次越少星星越多！",f:"showCatPick('memory')"},
+    {e:"💬",t:"會話挑戰",d:"情境對話題：有人跟你打招呼，你該怎麼回？對應第 13～25 課。",f:"startDialogue()"},
+  ],
+  back:"← 回主選單",quit:"✕ 放棄",
+  lettersPill:"維吾爾文 32 字母（第 1～12 課）",
+  wordbookPill:"課本生詞（第 13～25 課）",
+  catQuiz:"✏️ 單字測驗",catMemory:"🃏 單字翻翻樂",
+  catPrompt:"選一個單字範圍：",catAll:"全部",go:"開始！",
+  scoreLabel:"得分",movesLabel:"翻牌數",pairsLabel:"已配對",
+  qNum:(i,n)=>`第 ${i}／${n} 題`,
+  letterQ1:"這個字母怎麼唸？",letterQ2:"哪個字母唸這個音？",
+  wordQ1:"這個維吾爾語單字是什麼意思？",wordQ2:w=>`「${w}」的維吾爾語是？`,
+  lesson:n=>`📖 第 ${n} 課`,wordCount:n=>`（${n} 個）`,
+  correct:"✅ 答對了！",combo:(n,b)=>`🔥 連對 ${n} 題，加 ${b} 分！`,
+  wrong:"❌ 可惜！正確答案已標綠。",answerIs:"正解：",
+  noLife:"三條命用完了……",great:"太厲害了！",done:"完成挑戰！",
+  resScore:(s,t)=>`得分 ${s}／${t}`,resStopped:i=>`（答到第 ${i} 題）`,resXP:n=>`獲得經驗值 +${n}`,
+  memDone:"全部配對成功！",memMoves:n=>`共翻了 ${n} 次`,
+  retry:"再玩一次",home:"回主選單",
+},
+ja:{
+  title:"📚 大衆ウイグル語・学習ミニゲーム",
+  htmlLang:"ja",
+  langBtn:"🌐 中文",
+  xpLabel:"経験値",
+  intro:`<b>ياخشىمۇسىز؟</b>（Yaxshimusiz? こんにちは／お元気ですか？）<br>
+    このゲームは教科書『大衆維語』（新疆大学出版社）第1～25課がもとになっています：32文字・約100語・基本会話。
+    まず「文字表」と「単語帳」で予習してからチャレンジしましょう！`,
+  menu:[
+    {e:"📖",t:"文字表（予習）",d:"ウイグル文字32文字をラテン転写と国際音声記号つきで一覧。教科書第1～12課対応。",f:"showStudyLetters()"},
+    {e:"📒",t:"単語帳（予習）",d:"テーマ別に教科書の単語を一覧：家族、職業、物、数字、時間……",f:"showWordbook()"},
+    {e:"🔠",t:"文字チャレンジ",d:"文字→読み、読み→文字の4択、全10問。文字を覚えるのが第一歩！",f:"startLetterQuiz()"},
+    {e:"✏️",t:"単語クイズ",d:"ウイグル語→日本語、日本語→ウイグル語の4択。ライフ3つ、連続正解でボーナス！",f:"showCatPick('quiz')"},
+    {e:"🃏",t:"単語めくりゲーム",d:"神経衰弱：ウイグル語⇔日本語のペアを探そう。少ない回数ほど星が増える！",f:"showCatPick('memory')"},
+    {e:"💬",t:"会話チャレンジ",d:"場面別の会話問題。挨拶されたら何と返す？第13～25課対応。",f:"startDialogue()"},
+  ],
+  back:"← メニューへ",quit:"✕ やめる",
+  lettersPill:"ウイグル文字 32 文字（第1～12課）",
+  wordbookPill:"教科書の単語（第13～25課）",
+  catQuiz:"✏️ 単語クイズ",catMemory:"🃏 単語めくりゲーム",
+  catPrompt:"単語の範囲を選んでください：",catAll:"すべて",go:"スタート！",
+  scoreLabel:"スコア",movesLabel:"めくった回数",pairsLabel:"ペア",
+  qNum:(i,n)=>`第${i}問／全${n}問`,
+  letterQ1:"この文字の読み方は？",letterQ2:"この音の文字はどれ？",
+  wordQ1:"このウイグル語の単語の意味は？",wordQ2:w=>`「${w}」はウイグル語で？`,
+  lesson:n=>`📖 第${n}課`,wordCount:n=>`（${n}語）`,
+  correct:"✅ 正解！",combo:(n,b)=>`🔥 ${n}問連続正解、＋${b}点！`,
+  wrong:"❌ 残念！正解は緑色で表示しています。",answerIs:"正解：",
+  noLife:"ライフがなくなりました…",great:"すごい！",done:"チャレンジ完了！",
+  resScore:(s,t)=>`スコア ${s}／${t}`,resStopped:i=>`（第${i}問まで）`,resXP:n=>`経験値 +${n} ゲット`,
+  memDone:"全ペア成立！",memMoves:n=>`めくった回数：${n}回`,
+  retry:"もう一度遊ぶ",home:"メニューに戻る",
+},
+};
+
 /* ═══════════════ 資料：取自《大眾維語》第 1～25 課 ═══════════════ */
 
 // 32 個字母（第 1～12 課字母表：字形、拉丁轉寫、國際音標）
@@ -269,162 +314,201 @@ const LETTERS=[
   {u:"ئى",l:"i",ipa:"[i]"},   {u:"ي",l:"y",ipa:"[j]"},
 ];
 
-// 生詞（u 維文、l 拉丁、zh 中文、les 課別）
+// 生詞（u 維文、l 拉丁、zh 中文、ja 日文、les 課別）；類別名稱以 zh 為鍵
+const CATNAMES={
+  "家人與人物":{zh:"家人與人物",ja:"家族と人"},
+  "職業":{zh:"職業",ja:"職業"},
+  "物品":{zh:"物品",ja:"物"},
+  "數字":{zh:"數字",ja:"数字"},
+  "時間":{zh:"時間",ja:"時間"},
+  "代詞與問句":{zh:"代詞與問句",ja:"代名詞と疑問詞"},
+  "形容詞與常用詞":{zh:"形容詞與常用詞",ja:"形容詞と常用語"},
+};
 const WORDS={
   "家人與人物":[
-    {u:"ئانا",l:"ana",zh:"母親",les:2},
-    {u:"ئاتا",l:"ata",zh:"父親",les:3},
-    {u:"دادا",l:"dada",zh:"爸爸",les:3},
-    {u:"ئاپا",l:"apa",zh:"媽媽",les:17},
-    {u:"بالا",l:"bala",zh:"孩子",les:16},
-    {u:"ئاكا",l:"aka",zh:"哥哥",les:16},
-    {u:"ئايال",l:"ayal",zh:"妻子；女人",les:23},
-    {u:"ئوغۇل",l:"oghul",zh:"兒子",les:23},
-    {u:"قىز",l:"qiz",zh:"女兒；姑娘",les:23},
-    {u:"نەۋرە",l:"newre",zh:"孫子",les:23},
-    {u:"ئائىلە",l:"a'ile",zh:"家庭",les:3},
-    {u:"دوست",l:"dost",zh:"朋友",les:17},
-    {u:"كىشى",l:"kishi",zh:"人",les:22},
+    {u:"ئانا",l:"ana",zh:"母親",ja:"母",les:2},
+    {u:"ئاتا",l:"ata",zh:"父親",ja:"父",les:3},
+    {u:"دادا",l:"dada",zh:"爸爸",ja:"お父さん；パパ",les:3},
+    {u:"ئاپا",l:"apa",zh:"媽媽",ja:"お母さん；ママ",les:17},
+    {u:"بالا",l:"bala",zh:"孩子",ja:"子ども",les:16},
+    {u:"ئاكا",l:"aka",zh:"哥哥",ja:"兄；お兄さん",les:16},
+    {u:"ئايال",l:"ayal",zh:"妻子；女人",ja:"妻；女の人",les:23},
+    {u:"ئوغۇل",l:"oghul",zh:"兒子",ja:"息子",les:23},
+    {u:"قىز",l:"qiz",zh:"女兒；姑娘",ja:"娘；女の子",les:23},
+    {u:"نەۋرە",l:"newre",zh:"孫子",ja:"孫",les:23},
+    {u:"ئائىلە",l:"a'ile",zh:"家庭",ja:"家族；家庭",les:3},
+    {u:"دوست",l:"dost",zh:"朋友",ja:"友達",les:17},
+    {u:"كىشى",l:"kishi",zh:"人",ja:"人",les:22},
   ],
   "職業":[
-    {u:"دوختۇر",l:"doxtur",zh:"醫生",les:14},
-    {u:"ئوقۇغۇچى",l:"oqughuchi",zh:"學生",les:14},
-    {u:"مۇئەللىم",l:"mu'ellim",zh:"老師",les:15},
-    {u:"تەرجىمان",l:"terjiman",zh:"翻譯；譯員",les:14},
-    {u:"شوپۇر",l:"shopur",zh:"司機",les:14},
-    {u:"ئىشچى",l:"ishchi",zh:"工人",les:14},
-    {u:"دېھقان",l:"dëhqan",zh:"農民",les:15},
-    {u:"كادىر",l:"kadir",zh:"幹部",les:15},
-    {u:"خىزمەتچى",l:"xizmetchi",zh:"職工",les:15},
+    {u:"دوختۇر",l:"doxtur",zh:"醫生",ja:"医者",les:14},
+    {u:"ئوقۇغۇچى",l:"oqughuchi",zh:"學生",ja:"学生",les:14},
+    {u:"مۇئەللىم",l:"mu'ellim",zh:"老師",ja:"先生；教師",les:15},
+    {u:"تەرجىمان",l:"terjiman",zh:"翻譯；譯員",ja:"通訳；翻訳者",les:14},
+    {u:"شوپۇر",l:"shopur",zh:"司機",ja:"運転手",les:14},
+    {u:"ئىشچى",l:"ishchi",zh:"工人",ja:"労働者",les:14},
+    {u:"دېھقان",l:"dëhqan",zh:"農民",ja:"農民",les:15},
+    {u:"كادىر",l:"kadir",zh:"幹部",ja:"幹部",les:15},
+    {u:"خىزمەتچى",l:"xizmetchi",zh:"職工",ja:"職員",les:15},
   ],
   "物品":[
-    {u:"كىتاب",l:"kitab",zh:"書",les:13},
-    {u:"لۇغەت",l:"lughet",zh:"詞典",les:13},
-    {u:"قەلەم",l:"qelem",zh:"筆",les:13},
-    {u:"قەغەز",l:"qeghez",zh:"紙",les:15},
-    {u:"گېزىت",l:"gëzit",zh:"報紙",les:13},
-    {u:"تېلېفون",l:"tëlëfon",zh:"電話",les:13},
-    {u:"سائەت",l:"sa'et",zh:"手錶；時鐘",les:13},
-    {u:"ماشىنا",l:"mashina",zh:"汽車；機器",les:13},
-    {u:"ئاپتوبۇس",l:"aptobus",zh:"公共汽車",les:16},
-    {u:"ھۆججەت",l:"höjjet",zh:"文件",les:15},
-    {u:"بېلەت",l:"bëlet",zh:"車票",les:25},
-    {u:"ئورۇندۇق",l:"orunduq",zh:"座位",les:25},
-    {u:"چاپان",l:"chapan",zh:"袷袢（外衣）",les:25},
-    {u:"ئاياغ",l:"ayagh",zh:"鞋；腳",les:25},
-    {u:"ئۆي",l:"öy",zh:"房子；家",les:17},
-    {u:"ئالما",l:"alma",zh:"蘋果",les:16},
-    {u:"تىل",l:"til",zh:"語言；舌頭",les:3},
-    {u:"دوختۇرخانا",l:"doxturxana",zh:"醫院",les:23},
-    {u:"رېستۇران",l:"rëstoran",zh:"餐廳",les:24},
-    {u:"تاماكا",l:"tamaka",zh:"香菸",les:13},
+    {u:"كىتاب",l:"kitab",zh:"書",ja:"本",les:13},
+    {u:"لۇغەت",l:"lughet",zh:"詞典",ja:"辞書",les:13},
+    {u:"قەلەم",l:"qelem",zh:"筆",ja:"ペン",les:13},
+    {u:"قەغەز",l:"qeghez",zh:"紙",ja:"紙",les:15},
+    {u:"گېزىت",l:"gëzit",zh:"報紙",ja:"新聞",les:13},
+    {u:"تېلېفون",l:"tëlëfon",zh:"電話",ja:"電話",les:13},
+    {u:"سائەت",l:"sa'et",zh:"手錶；時鐘",ja:"時計",les:13},
+    {u:"ماشىنا",l:"mashina",zh:"汽車；機器",ja:"車；機械",les:13},
+    {u:"ئاپتوبۇس",l:"aptobus",zh:"公共汽車",ja:"バス",les:16},
+    {u:"ھۆججەت",l:"höjjet",zh:"文件",ja:"書類",les:15},
+    {u:"بېلەت",l:"bëlet",zh:"車票",ja:"切符",les:25},
+    {u:"ئورۇندۇق",l:"orunduq",zh:"座位",ja:"座席；椅子",les:25},
+    {u:"چاپان",l:"chapan",zh:"袷袢（外衣）",ja:"チャパン（上着）",les:25},
+    {u:"ئاياغ",l:"ayagh",zh:"鞋；腳",ja:"靴；足",les:25},
+    {u:"ئۆي",l:"öy",zh:"房子；家",ja:"家",les:17},
+    {u:"ئالما",l:"alma",zh:"蘋果",ja:"リンゴ",les:16},
+    {u:"تىل",l:"til",zh:"語言；舌頭",ja:"言葉；舌",les:3},
+    {u:"دوختۇرخانا",l:"doxturxana",zh:"醫院",ja:"病院",les:23},
+    {u:"رېستۇران",l:"rëstoran",zh:"餐廳",ja:"レストラン",les:24},
+    {u:"تاماكا",l:"tamaka",zh:"香菸",ja:"タバコ",les:13},
   ],
   "數字":[
-    {u:"بىر",l:"bir",zh:"一",les:23},
-    {u:"ئىككى",l:"ikki",zh:"二",les:23},
-    {u:"ئۈچ",l:"üch",zh:"三",les:23},
-    {u:"تۆت",l:"töt",zh:"四",les:23},
-    {u:"بەش",l:"besh",zh:"五",les:23},
-    {u:"ئالتە",l:"alte",zh:"六",les:23},
-    {u:"يەتتە",l:"yette",zh:"七",les:23},
-    {u:"سەككىز",l:"sekkiz",zh:"八",les:23},
-    {u:"توققۇز",l:"toqquz",zh:"九",les:23},
-    {u:"ئون",l:"on",zh:"十",les:23},
-    {u:"يىگىرمە",l:"yigirme",zh:"二十",les:23},
-    {u:"ئوتتۇز",l:"ottuz",zh:"三十",les:23},
-    {u:"قىرىق",l:"qiriq",zh:"四十",les:23},
-    {u:"ئەللىك",l:"ellik",zh:"五十",les:23},
-    {u:"يۈز",l:"yüz",zh:"一百",les:23},
-    {u:"مىڭ",l:"ming",zh:"一千",les:23},
+    {u:"بىر",l:"bir",zh:"一",ja:"一",les:23},
+    {u:"ئىككى",l:"ikki",zh:"二",ja:"二",les:23},
+    {u:"ئۈچ",l:"üch",zh:"三",ja:"三",les:23},
+    {u:"تۆت",l:"töt",zh:"四",ja:"四",les:23},
+    {u:"بەش",l:"besh",zh:"五",ja:"五",les:23},
+    {u:"ئالتە",l:"alte",zh:"六",ja:"六",les:23},
+    {u:"يەتتە",l:"yette",zh:"七",ja:"七",les:23},
+    {u:"سەككىز",l:"sekkiz",zh:"八",ja:"八",les:23},
+    {u:"توققۇز",l:"toqquz",zh:"九",ja:"九",les:23},
+    {u:"ئون",l:"on",zh:"十",ja:"十",les:23},
+    {u:"يىگىرمە",l:"yigirme",zh:"二十",ja:"二十",les:23},
+    {u:"ئوتتۇز",l:"ottuz",zh:"三十",ja:"三十",les:23},
+    {u:"قىرىق",l:"qiriq",zh:"四十",ja:"四十",les:23},
+    {u:"ئەللىك",l:"ellik",zh:"五十",ja:"五十",les:23},
+    {u:"يۈز",l:"yüz",zh:"一百",ja:"百",les:23},
+    {u:"مىڭ",l:"ming",zh:"一千",ja:"千",les:23},
   ],
   "時間":[
-    {u:"بۈگۈن",l:"bügün",zh:"今天",les:24},
-    {u:"ئەتە",l:"ete",zh:"明天",les:3},
-    {u:"تۈنۈگۈن",l:"tünügün",zh:"昨天",les:24},
-    {u:"يىل",l:"yil",zh:"年",les:24},
-    {u:"ئاي",l:"ay",zh:"月",les:24},
-    {u:"كۈن",l:"kün",zh:"日；天",les:24},
-    {u:"ھەپتە",l:"hepte",zh:"星期；週",les:24},
-    {u:"بايرام",l:"bayram",zh:"節日",les:24},
-    {u:"دۈشەنبە",l:"düshenbe",zh:"星期一",les:24},
-    {u:"سەيشەنبە",l:"seyshenbe",zh:"星期二",les:24},
-    {u:"چارشەنبە",l:"charshenbe",zh:"星期三",les:24},
-    {u:"پەيشەنبە",l:"peyshenbe",zh:"星期四",les:24},
-    {u:"جۈمە",l:"jüme",zh:"星期五",les:24},
-    {u:"شەنبە",l:"shenbe",zh:"星期六",les:24},
-    {u:"يەكشەنبە",l:"yekshenbe",zh:"星期日",les:24},
+    {u:"بۈگۈن",l:"bügün",zh:"今天",ja:"今日",les:24},
+    {u:"ئەتە",l:"ete",zh:"明天",ja:"明日",les:3},
+    {u:"تۈنۈگۈن",l:"tünügün",zh:"昨天",ja:"昨日",les:24},
+    {u:"يىل",l:"yil",zh:"年",ja:"年",les:24},
+    {u:"ئاي",l:"ay",zh:"月",ja:"月",les:24},
+    {u:"كۈن",l:"kün",zh:"日；天",ja:"日",les:24},
+    {u:"ھەپتە",l:"hepte",zh:"星期；週",ja:"週",les:24},
+    {u:"بايرام",l:"bayram",zh:"節日",ja:"祝日；祭り",les:24},
+    {u:"دۈشەنبە",l:"düshenbe",zh:"星期一",ja:"月曜日",les:24},
+    {u:"سەيشەنبە",l:"seyshenbe",zh:"星期二",ja:"火曜日",les:24},
+    {u:"چارشەنبە",l:"charshenbe",zh:"星期三",ja:"水曜日",les:24},
+    {u:"پەيشەنبە",l:"peyshenbe",zh:"星期四",ja:"木曜日",les:24},
+    {u:"جۈمە",l:"jüme",zh:"星期五",ja:"金曜日",les:24},
+    {u:"شەنبە",l:"shenbe",zh:"星期六",ja:"土曜日",les:24},
+    {u:"يەكشەنبە",l:"yekshenbe",zh:"星期日",ja:"日曜日",les:24},
   ],
   "代詞與問句":[
-    {u:"مەن",l:"men",zh:"我",les:14},
-    {u:"سەن",l:"sen",zh:"你",les:14},
-    {u:"سىز",l:"siz",zh:"您",les:14},
-    {u:"ئۇ",l:"u",zh:"他／她；那",les:13},
-    {u:"بىز",l:"biz",zh:"我們",les:14},
-    {u:"سىلەر",l:"siler",zh:"你們",les:17},
-    {u:"ئۇلار",l:"ular",zh:"他們",les:14},
-    {u:"بۇ",l:"bu",zh:"這",les:13},
-    {u:"ماۋۇ",l:"mawu",zh:"這個",les:13},
-    {u:"ئاۋۇ",l:"awu",zh:"那個",les:13},
-    {u:"نېمە",l:"nëme",zh:"什麼",les:13},
-    {u:"كىم",l:"kim",zh:"誰",les:14},
-    {u:"ئىسىم",l:"isim",zh:"名字",les:16},
-    {u:"مىللەت",l:"millet",zh:"民族",les:21},
-    {u:"ئۇيغۇر",l:"Uyghur",zh:"維吾爾（族）",les:21},
-    {u:"خەنزۇ",l:"Xenzu",zh:"漢族",les:21},
-    {u:"ياش",l:"yash",zh:"歲；年輕",les:21},
+    {u:"مەن",l:"men",zh:"我",ja:"私",les:14},
+    {u:"سەن",l:"sen",zh:"你",ja:"君",les:14},
+    {u:"سىز",l:"siz",zh:"您",ja:"あなた（敬称）",les:14},
+    {u:"ئۇ",l:"u",zh:"他／她；那",ja:"彼／彼女；あれ",les:13},
+    {u:"بىز",l:"biz",zh:"我們",ja:"私たち",les:14},
+    {u:"سىلەر",l:"siler",zh:"你們",ja:"君たち",les:17},
+    {u:"ئۇلار",l:"ular",zh:"他們",ja:"彼ら",les:14},
+    {u:"بۇ",l:"bu",zh:"這",ja:"これ",les:13},
+    {u:"ماۋۇ",l:"mawu",zh:"這個",ja:"これ（強調）",les:13},
+    {u:"ئاۋۇ",l:"awu",zh:"那個",ja:"あれ（強調）",les:13},
+    {u:"نېمە",l:"nëme",zh:"什麼",ja:"何",les:13},
+    {u:"كىم",l:"kim",zh:"誰",ja:"誰",les:14},
+    {u:"ئىسىم",l:"isim",zh:"名字",ja:"名前",les:16},
+    {u:"مىللەت",l:"millet",zh:"民族",ja:"民族",les:21},
+    {u:"ئۇيغۇر",l:"Uyghur",zh:"維吾爾（族）",ja:"ウイグル（族）",les:21},
+    {u:"خەنزۇ",l:"Xenzu",zh:"漢族",ja:"漢族",les:21},
+    {u:"ياش",l:"yash",zh:"歲；年輕",ja:"〜歳；若い",les:21},
   ],
   "形容詞與常用詞":[
-    {u:"ياخشى",l:"yaxshi",zh:"好",les:22},
-    {u:"يېڭى",l:"yëngi",zh:"新",les:15},
-    {u:"كونا",l:"kona",zh:"舊",les:15},
-    {u:"يىراق",l:"yiraq",zh:"遠",les:17},
-    {u:"ئاددىي",l:"addiy",zh:"簡單",les:3},
-    {u:"ئالدىراش",l:"aldirash",zh:"忙",les:22},
-    {u:"سالامەت",l:"salamet",zh:"健康",les:22},
-    {u:"تىنچلىق",l:"tinchliq",zh:"平安",les:22},
-    {u:"مېھماندوست",l:"mëhmandost",zh:"好客",les:21},
-    {u:"بەك",l:"bek",zh:"很；非常",les:21},
-    {u:"دائىم",l:"da'im",zh:"經常",les:21},
-    {u:"بىللە",l:"bille",zh:"一起",les:21},
-    {u:"ھەئە",l:"he'e",zh:"是的",les:15},
-    {u:"ياق",l:"yaq",zh:"不",les:15},
-    {u:"ئەمەس",l:"emes",zh:"不是",les:15},
-    {u:"بار",l:"bar",zh:"有",les:23},
+    {u:"ياخشى",l:"yaxshi",zh:"好",ja:"良い",les:22},
+    {u:"يېڭى",l:"yëngi",zh:"新",ja:"新しい",les:15},
+    {u:"كونا",l:"kona",zh:"舊",ja:"古い",les:15},
+    {u:"يىراق",l:"yiraq",zh:"遠",ja:"遠い",les:17},
+    {u:"ئاددىي",l:"addiy",zh:"簡單",ja:"簡単",les:3},
+    {u:"ئالدىراش",l:"aldirash",zh:"忙",ja:"忙しい",les:22},
+    {u:"سالامەت",l:"salamet",zh:"健康",ja:"健康",les:22},
+    {u:"تىنچلىق",l:"tinchliq",zh:"平安",ja:"無事；平安",les:22},
+    {u:"مېھماندوست",l:"mëhmandost",zh:"好客",ja:"もてなし好き",les:21},
+    {u:"بەك",l:"bek",zh:"很；非常",ja:"とても",les:21},
+    {u:"دائىم",l:"da'im",zh:"經常",ja:"いつも；よく",les:21},
+    {u:"بىللە",l:"bille",zh:"一起",ja:"一緒に",les:21},
+    {u:"ھەئە",l:"he'e",zh:"是的",ja:"はい",les:15},
+    {u:"ياق",l:"yaq",zh:"不",ja:"いいえ",les:15},
+    {u:"ئەمەس",l:"emes",zh:"不是",ja:"〜ではない",les:15},
+    {u:"بار",l:"bar",zh:"有",ja:"ある；いる",les:23},
   ],
 };
 
 // 會話挑戰（第 13～25 課課文與注釋）
 const DIALOGUES=[
-  {q:"有人見面跟你打招呼：",qu:"ياخشىمۇسىز؟",ql:"Yaxshimusiz?（您好嗎？）",
-   a:{u:"ياخشى، ئۆزىڭىزچۇ؟",l:"Yaxshi, özingizchu?",zh:"好，您呢？"},
-   d:[{u:"بۇ كىتاب.",l:"Bu kitab.",zh:"這是書。"},{u:"ياق، ئەمەس.",l:"Yaq, emes.",zh:"不，不是。"},{u:"مەن ئادىل.",l:"Men Adil.",zh:"我是阿迪里。"}],les:22},
-  {q:"對方指著東西問：بۇ نېمە؟（Bu nëme? 這是什麼？）你想回答「這是詞典」：",qu:"بۇ نېمە؟",ql:"Bu nëme?",
-   a:{u:"بۇ لۇغەت.",l:"Bu lughet.",zh:"這是詞典。"},
-   d:[{u:"ئۇ دوختۇر.",l:"U doxtur.",zh:"他是醫生。"},{u:"مەن ئوقۇغۇچى.",l:"Men oqughuchi.",zh:"我是學生。"},{u:"بۇ كىم؟",l:"Bu kim?",zh:"這是誰？"}],les:13},
-  {q:"對方問：سىز كىم؟（Siz kim? 您是誰？）你想回答「我是買買提」：",qu:"سىز كىم؟",ql:"Siz kim?",
-   a:{u:"مەن مەمەت.",l:"Men Memet.",zh:"我是買買提。"},
-   d:[{u:"ئۇ مەمەت.",l:"U Memet.",zh:"他是買買提。"},{u:"بۇ قەلەم.",l:"Bu qelem.",zh:"這是筆。"},{u:"سىز ياخشى.",l:"Siz yaxshi.",zh:"您好（您很好）。"}],les:14},
-  {q:"朋友問：ئۇ كىم؟（U kim? 他是誰？）你想說「他是醫生」：",qu:"ئۇ كىم؟",ql:"U kim?",
-   a:{u:"ئۇ دوختۇر.",l:"U doxtur.",zh:"他是醫生。"},
-   d:[{u:"بۇ ماشىنا.",l:"Bu mashina.",zh:"這是汽車。"},{u:"مەن دوختۇر.",l:"Men doxtur.",zh:"我是醫生。"},{u:"ئۇلار ئىشچىلار.",l:"Ular ishchilar.",zh:"他們是工人。"}],les:14},
-  {q:"對方問：سىز قەيەرلىك؟（Siz qeyerlik? 您是哪裡人？）你想說「我是喀什人」：",qu:"سىز قەيەرلىك؟",ql:"Siz qeyerlik?",
-   a:{u:"مەن قەشقەرلىك.",l:"Men Qeshqerlik.",zh:"我是喀什人。"},
-   d:[{u:"مەن ئوقۇغۇچى.",l:"Men oqughuchi.",zh:"我是學生。"},{u:"بۇ يىراق ئەمەس.",l:"Bu yiraq emes.",zh:"這不遠。"},{u:"ئۇ قەشقەرلىك.",l:"U Qeshqerlik.",zh:"他是喀什人。"}],les:17},
-  {q:"對方問：بۇ كىتابمۇ؟（Bu kitabmu? 這是書嗎？）你想回答「是的，這是書」：",qu:"بۇ كىتابمۇ؟",ql:"Bu kitabmu?",
-   a:{u:"ھەئە، بۇ كىتاب.",l:"He'e, bu kitab.",zh:"是的，這是書。"},
-   d:[{u:"ياق، بۇ كىتاب.",l:"Yaq, bu kitab.",zh:"不，這是書。（矛盾）"},{u:"ھەئە، بۇ قەغەز ئەمەس.",l:"He'e, bu qeghez emes.",zh:"是的，這不是紙。（答非所問）"},{u:"بۇ نېمە؟",l:"Bu nëme?",zh:"這是什麼？"}],les:15},
-  {q:"你想否認：「不，這不是紙。」（否定用 ئەمەس emes，第 15 課）",qu:"بۇ قەغەزمۇ؟",ql:"Bu qeghezmu?（這是紙嗎？）",
-   a:{u:"ياق، بۇ قەغەز ئەمەس.",l:"Yaq, bu qeghez emes.",zh:"不，這不是紙。"},
-   d:[{u:"ھەئە، بۇ قەغەز.",l:"He'e, bu qeghez.",zh:"是的，這是紙。"},{u:"ياق، بۇ قەغەز.",l:"Yaq, bu qeghez.",zh:"不，這是紙。（矛盾）"},{u:"بۇ يېڭى قەغەز.",l:"Bu yëngi qeghez.",zh:"這是新紙。"}],les:15},
-  {q:"對方關心地問：ئالدىراشمۇ سىز؟（您忙嗎？）你想回「不太忙」（ئانچە anche 只用於否定，第 22 課）：",qu:"ئالدىراشمۇ سىز؟",ql:"Aldirashmu siz?",
-   a:{u:"ئانچە ئەمەس.",l:"Anche emes.",zh:"不怎麼忙。"},
-   d:[{u:"بەك ياخشى.",l:"Bek yaxshi.",zh:"很好。（答非所問）"},{u:"ھەئە، ئانچە.",l:"He'e, anche.",zh:"（ئانچە 不能單獨肯定用）"},{u:"مەن ئالدىراش ئەمەس ئەمەس.",l:"Men aldirash emes emes.",zh:"（雙重否定，不通）"}],les:22},
-  {q:"朋友問：بۈگۈن كۈنگە نېمە؟（今天星期幾？）你想說「今天星期日」：",qu:"بۈگۈن كۈنگە نېمە؟",ql:"Bügün kün'ge nëme?",
-   a:{u:"بۈگۈن كۈنگە يەكشەنبە.",l:"Bügün kün'ge yekshenbe.",zh:"今天星期日。"},
-   d:[{u:"بۈگۈن بايرام ئەمەس.",l:"Bügün bayram emes.",zh:"今天不是節日。"},{u:"ئەتە جۈمە.",l:"Ete jüme.",zh:"明天星期五。"},{u:"تۈنۈگۈن شەنبە.",l:"Tünügün shenbe.",zh:"昨天星期六。"}],les:24},
-  {q:"對方問候：ئۆي ئىچىڭىز تىنچلىقمۇ؟（家裡人都平安嗎？）你想回「都平安」：",qu:"ئۆي ئىچىڭىز تىنچلىقمۇ؟",ql:"Öy ichingiz tinchliqmu?",
-   a:{u:"تىنچلىق.",l:"Tinchliq.",zh:"都平安。"},
-   d:[{u:"يىراق.",l:"Yiraq.",zh:"很遠。（答非所問）"},{u:"ئۇ دوختۇرخانىدا.",l:"U doxturxanida.",zh:"他在醫院。（答非所問）"},{u:"بۇ ئۆي.",l:"Bu öy.",zh:"這是房子。"}],les:22},
+  {q:{zh:"有人見面跟你打招呼：",ja:"挨拶されました。何と返す？"},
+   qu:"ياخشىمۇسىز؟",ql:"Yaxshimusiz?",
+   a:{u:"ياخشى، ئۆزىڭىزچۇ؟",l:"Yaxshi, özingizchu?",zh:"好，您呢？",ja:"元気です、あなたは？"},
+   d:[{u:"بۇ كىتاب.",l:"Bu kitab.",zh:"這是書。",ja:"これは本です。"},
+      {u:"ياق، ئەمەس.",l:"Yaq, emes.",zh:"不，不是。",ja:"いいえ、違います。"},
+      {u:"مەن ئادىل.",l:"Men Adil.",zh:"我是阿迪里。",ja:"私はアディルです。"}],les:22},
+  {q:{zh:"對方指著東西問「這是什麼？」，你想回答「這是詞典」：",ja:"「これは何？」と聞かれました。「これは辞書です」と答えたい："},
+   qu:"بۇ نېمە؟",ql:"Bu nëme?",
+   a:{u:"بۇ لۇغەت.",l:"Bu lughet.",zh:"這是詞典。",ja:"これは辞書です。"},
+   d:[{u:"ئۇ دوختۇر.",l:"U doxtur.",zh:"他是醫生。",ja:"彼は医者です。"},
+      {u:"مەن ئوقۇغۇچى.",l:"Men oqughuchi.",zh:"我是學生。",ja:"私は学生です。"},
+      {u:"بۇ كىم؟",l:"Bu kim?",zh:"這是誰？",ja:"これは誰？"}],les:13},
+  {q:{zh:"對方問「您是誰？」，你想回答「我是買買提」：",ja:"「あなたは誰？」と聞かれました。「私はメメットです」と答えたい："},
+   qu:"سىز كىم؟",ql:"Siz kim?",
+   a:{u:"مەن مەمەت.",l:"Men Memet.",zh:"我是買買提。",ja:"私はメメットです。"},
+   d:[{u:"ئۇ مەمەت.",l:"U Memet.",zh:"他是買買提。",ja:"彼はメメットです。"},
+      {u:"بۇ قەلەم.",l:"Bu qelem.",zh:"這是筆。",ja:"これはペンです。"},
+      {u:"سىز ياخشى.",l:"Siz yaxshi.",zh:"您好（您很好）。",ja:"あなたは良い。（かみ合わない）"}],les:14},
+  {q:{zh:"朋友問「他是誰？」，你想說「他是醫生」：",ja:"「彼は誰？」と聞かれました。「彼は医者です」と言いたい："},
+   qu:"ئۇ كىم؟",ql:"U kim?",
+   a:{u:"ئۇ دوختۇر.",l:"U doxtur.",zh:"他是醫生。",ja:"彼は医者です。"},
+   d:[{u:"بۇ ماشىنا.",l:"Bu mashina.",zh:"這是汽車。",ja:"これは車です。"},
+      {u:"مەن دوختۇر.",l:"Men doxtur.",zh:"我是醫生。",ja:"私は医者です。"},
+      {u:"ئۇلار ئىشچىلار.",l:"Ular ishchilar.",zh:"他們是工人。",ja:"彼らは労働者です。"}],les:14},
+  {q:{zh:"對方問「您是哪裡人？」，你想說「我是喀什人」：",ja:"「ご出身は？」と聞かれました。「私はカシュガル出身です」と言いたい："},
+   qu:"سىز قەيەرلىك؟",ql:"Siz qeyerlik?",
+   a:{u:"مەن قەشقەرلىك.",l:"Men Qeshqerlik.",zh:"我是喀什人。",ja:"私はカシュガル出身です。"},
+   d:[{u:"مەن ئوقۇغۇچى.",l:"Men oqughuchi.",zh:"我是學生。",ja:"私は学生です。"},
+      {u:"بۇ يىراق ئەمەس.",l:"Bu yiraq emes.",zh:"這不遠。",ja:"ここは遠くないです。"},
+      {u:"ئۇ قەشقەرلىك.",l:"U Qeshqerlik.",zh:"他是喀什人。",ja:"彼はカシュガル出身です。"}],les:17},
+  {q:{zh:"對方問「這是書嗎？」，你想回答「是的，這是書」：",ja:"「これは本ですか？」と聞かれました。「はい、これは本です」と答えたい："},
+   qu:"بۇ كىتابمۇ؟",ql:"Bu kitabmu?",
+   a:{u:"ھەئە، بۇ كىتاب.",l:"He'e, bu kitab.",zh:"是的，這是書。",ja:"はい、これは本です。"},
+   d:[{u:"ياق، بۇ كىتاب.",l:"Yaq, bu kitab.",zh:"不，這是書。（矛盾）",ja:"いいえ、これは本です。（矛盾）"},
+      {u:"ھەئە، بۇ قەغەز ئەمەس.",l:"He'e, bu qeghez emes.",zh:"是的，這不是紙。（答非所問）",ja:"はい、これは紙ではありません。（かみ合わない）"},
+      {u:"بۇ نېمە؟",l:"Bu nëme?",zh:"這是什麼？",ja:"これは何？"}],les:15},
+  {q:{zh:"你想否認「不，這不是紙」（否定用 ئەمەس emes，第 15 課）：",ja:"「これは紙ですか？」に「いいえ、紙ではありません」と否定したい（否定は emes、第15課）："},
+   qu:"بۇ قەغەزمۇ؟",ql:"Bu qeghezmu?",
+   a:{u:"ياق، بۇ قەغەز ئەمەس.",l:"Yaq, bu qeghez emes.",zh:"不，這不是紙。",ja:"いいえ、これは紙ではありません。"},
+   d:[{u:"ھەئە، بۇ قەغەز.",l:"He'e, bu qeghez.",zh:"是的，這是紙。",ja:"はい、これは紙です。"},
+      {u:"ياق، بۇ قەغەز.",l:"Yaq, bu qeghez.",zh:"不，這是紙。（矛盾）",ja:"いいえ、これは紙です。（矛盾）"},
+      {u:"بۇ يېڭى قەغەز.",l:"Bu yëngi qeghez.",zh:"這是新紙。",ja:"これは新しい紙です。"}],les:15},
+  {q:{zh:"對方關心地問「您忙嗎？」，你想回「不太忙」（ئانچە anche 只用於否定，第 22 課）：",ja:"「お忙しいですか？」と聞かれました。「あまり忙しくない」と答えたい（anche は否定でのみ使う、第22課）："},
+   qu:"ئالدىراشمۇ سىز؟",ql:"Aldirashmu siz?",
+   a:{u:"ئانچە ئەمەس.",l:"Anche emes.",zh:"不怎麼忙。",ja:"あまり（忙しく）ないです。"},
+   d:[{u:"بەك ياخشى.",l:"Bek yaxshi.",zh:"很好。（答非所問）",ja:"とても良いです。（かみ合わない）"},
+      {u:"ھەئە، ئانچە.",l:"He'e, anche.",zh:"（ئانچە 不能單獨肯定用）",ja:"（anche は肯定で単独使用できない）"},
+      {u:"مەن ئالدىراش ئەمەس ئەمەس.",l:"Men aldirash emes emes.",zh:"（雙重否定，不通）",ja:"（二重否定で不自然）"}],les:22},
+  {q:{zh:"朋友問「今天星期幾？」，你想說「今天星期日」：",ja:"「今日は何曜日？」と聞かれました。「今日は日曜日」と言いたい："},
+   qu:"بۈگۈن كۈنگە نېمە؟",ql:"Bügün kün'ge nëme?",
+   a:{u:"بۈگۈن كۈنگە يەكشەنبە.",l:"Bügün kün'ge yekshenbe.",zh:"今天星期日。",ja:"今日は日曜日です。"},
+   d:[{u:"بۈگۈن بايرام ئەمەس.",l:"Bügün bayram emes.",zh:"今天不是節日。",ja:"今日は祝日ではありません。"},
+      {u:"ئەتە جۈمە.",l:"Ete jüme.",zh:"明天星期五。",ja:"明日は金曜日です。"},
+      {u:"تۈنۈگۈن شەنبە.",l:"Tünügün shenbe.",zh:"昨天星期六。",ja:"昨日は土曜日でした。"}],les:24},
+  {q:{zh:"對方問候「家裡人都平安嗎？」，你想回「都平安」：",ja:"「ご家族は皆さんお元気ですか？」と聞かれました。「みんな元気です」と答えたい："},
+   qu:"ئۆي ئىچىڭىز تىنچلىقمۇ؟",ql:"Öy ichingiz tinchliqmu?",
+   a:{u:"تىنچلىق.",l:"Tinchliq.",zh:"都平安。",ja:"みんな無事です。"},
+   d:[{u:"يىراق.",l:"Yiraq.",zh:"很遠。（答非所問）",ja:"遠いです。（かみ合わない）"},
+      {u:"ئۇ دوختۇرخانىدا.",l:"U doxturxanida.",zh:"他在醫院。（答非所問）",ja:"彼は病院にいます。（かみ合わない）"},
+      {u:"بۇ ئۆي.",l:"Bu öy.",zh:"這是房子。",ja:"これは家です。"}],les:22},
 ];
 
 /* ═══════════════ 共用工具 ═══════════════ */
@@ -435,12 +519,52 @@ function goHome(){show("view-home");}
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function allWords(){return Object.values(WORDS).flat();}
 
-/* ── 經驗值（localStorage 不可用時改用記憶體，例如沙盒預覽環境） ── */
-let memXP=0;
-function getXP(){try{return +(localStorage.getItem("uyghurXP")||0);}catch(e){return memXP;}}
-function addXP(n){const v=getXP()+n;try{localStorage.setItem("uyghurXP",v);}catch(e){memXP=v;}renderXP();}
+/* ── 安全存取 localStorage（沙盒環境改用記憶體） ── */
+const memStore={};
+function safeGet(k){try{return localStorage.getItem(k);}catch(e){return memStore[k]??null;}}
+function safeSet(k,v){try{localStorage.setItem(k,v);}catch(e){memStore[k]=String(v);}}
+
+/* ── 語言 ── */
+let lang="zh";
+function T(){return UI[lang];}
+function gloss(w){return lang==="ja"?w.ja:w.zh;}
+function catName(c){return c==="ALL"?T().catAll:CATNAMES[c][lang];}
+function detectLang(){
+  const p=new URLSearchParams(location.search).get("lang");
+  if(p==="ja"||p==="zh")return p;
+  const saved=safeGet("uyghurLang");
+  if(saved==="ja"||saved==="zh")return saved;
+  return (navigator.language||"").toLowerCase().startsWith("ja")?"ja":"zh";
+}
+function toggleLang(){lang=lang==="zh"?"ja":"zh";safeSet("uyghurLang",lang);applyLang();goHome();}
+function applyLang(){
+  const t=T();
+  document.documentElement.lang=t.htmlLang;
+  document.title=t.title;
+  $("appTitle").textContent=t.title;
+  $("langBtn").textContent=t.langBtn;
+  $("xpLabel").textContent=t.xpLabel;
+  $("introBox").innerHTML=t.intro;
+  $("menuBox").innerHTML=t.menu.map(m=>
+    `<div class="mcard" onclick="${m.f}">
+       <div class="emoji">${m.e}</div><h2>${m.t}</h2><p>${m.d}</p></div>`).join("");
+  document.querySelectorAll(".back-btn").forEach(b=>b.textContent=t.back);
+  $("quitBtn").textContent=t.quit;$("memQuit").textContent=t.quit;
+  $("lettersPill").textContent=t.lettersPill;
+  $("wordbookPill").textContent=t.wordbookPill;
+  $("catPrompt").textContent=t.catPrompt;
+  $("catGo").textContent=t.go;
+  $("scoreLabel").textContent=t.scoreLabel;
+  $("movesLabel").textContent=t.movesLabel;
+  $("pairsLabel").textContent=t.pairsLabel;
+  $("resRetry").textContent=t.retry;
+  $("resHome").textContent=t.home;
+}
+
+/* ── 經驗值 ── */
+function getXP(){return +(safeGet("uyghurXP")||0);}
+function addXP(n){safeSet("uyghurXP",getXP()+n);renderXP();}
 function renderXP(){$("xpVal").textContent=getXP();$("lvVal").textContent=Math.floor(getXP()/100)+1;}
-try{renderXP();}catch(e){}
 
 /* ═══════════════ 字母表（預習） ═══════════════ */
 function showStudyLetters(){
@@ -454,29 +578,29 @@ function showStudyLetters(){
 /* ═══════════════ 單字本（預習） ═══════════════ */
 function showWordbook(){
   $("wordbookBody").innerHTML=Object.entries(WORDS).map(([cat,ws])=>
-    `<div class="wbsec"><h3>${cat}（${ws.length} 個）</h3><table class="wb">`+
-    ws.map(w=>`<tr><td class="uy">${w.u}</td><td class="latin">${w.l}</td><td>${w.zh}<span style="color:var(--dim);font-size:.78rem;">　第${w.les}課</span></td></tr>`).join("")+
+    `<div class="wbsec"><h3>${catName(cat)}${T().wordCount(ws.length)}</h3><table class="wb">`+
+    ws.map(w=>`<tr><td class="uy">${w.u}</td><td class="latin">${w.l}</td><td>${gloss(w)}<span style="color:var(--dim);font-size:.78rem;">　${T().lesson(w.les)}</span></td></tr>`).join("")+
     `</table></div>`).join("");
   show("view-wordbook");
 }
 
 /* ═══════════════ 類別選擇 ═══════════════ */
-let pendingMode=null,selectedCat="全部";
+let pendingMode=null,selectedCat="ALL";
 function showCatPick(mode){
-  pendingMode=mode;selectedCat="全部";
-  $("catTitle").textContent=mode==="quiz"?"✏️ 單字測驗":"🃏 單字翻翻樂";
-  const cats=["全部",...Object.keys(WORDS)];
-  $("catList").innerHTML=cats.map(c=>
-    `<button class="cat${c==="全部"?" sel":""}" onclick="pickCat(this,'${c}')">${c}</button>`).join("");
+  pendingMode=mode;selectedCat="ALL";
+  $("catTitle").textContent=mode==="quiz"?T().catQuiz:T().catMemory;
+  const cats=["ALL",...Object.keys(WORDS)];
+  $("catList").innerHTML=cats.map((c,i)=>
+    `<button class="cat${c==="ALL"?" sel":""}" data-cat="${c}" onclick="pickCat(this)">${catName(c)}</button>`).join("");
   $("catGo").onclick=()=>pendingMode==="quiz"?startWordQuiz():startMemory();
   show("view-cat");
 }
-function pickCat(el,c){
-  selectedCat=c;
+function pickCat(el){
+  selectedCat=el.dataset.cat;
   document.querySelectorAll(".cat").forEach(b=>b.classList.remove("sel"));
   el.classList.add("sel");
 }
-function catWords(){return selectedCat==="全部"?allWords():WORDS[selectedCat];}
+function catWords(){return selectedCat==="ALL"?allWords():WORDS[selectedCat];}
 
 /* ═══════════════ 測驗引擎（字母／單字／會話共用） ═══════════════ */
 let Q={list:[],idx:0,score:0,hearts:3,combo:0,mode:"",retry:null};
@@ -487,7 +611,7 @@ function beginQuiz(list,mode,retryFn){
 }
 function renderQ(){
   const q=Q.list[Q.idx];
-  $("quizInfo").textContent=`第 ${Q.idx+1}／${Q.list.length} 題`;
+  $("quizInfo").textContent=T().qNum(Q.idx+1,Q.list.length);
   $("quizHearts").textContent="❤️".repeat(Q.hearts)+"🖤".repeat(3-Q.hearts);
   $("quizScore").textContent=Q.score;
   $("quizProg").style.width=(Q.idx/Q.list.length*100)+"%";
@@ -497,7 +621,7 @@ function renderQ(){
   $("qSub").innerHTML=q.sub||"";
   $("qFeed").innerHTML="";
   $("qOpts").innerHTML="";
-  q.opts.forEach((o,i)=>{
+  q.opts.forEach(o=>{
     const b=document.createElement("button");
     b.className="opt";b.innerHTML=o.html;
     b.onclick=()=>answer(b,o.ok,q);
@@ -510,16 +634,14 @@ function answer(btn,ok,q){
     btn.classList.add("correct");
     Q.combo++;const bonus=Q.combo>=3?5:0;
     Q.score+=10+bonus;addXP(10+bonus);
-    $("qFeed").innerHTML=`✅ 答對了！${bonus?`<span class="combo">🔥 連對 ${Q.combo} 題，加 ${bonus} 分！</span>`:""}<br>${q.note||""}`;
+    $("qFeed").innerHTML=`${T().correct}${bonus?`<span class="combo"> ${T().combo(Q.combo,bonus)}</span>`:""}<br>${q.note||""}`;
   }else{
     btn.classList.add("wrong");btn.classList.add("shake");
     Q.combo=0;Q.hearts--;
-    document.querySelectorAll(".opt").forEach(b=>{if(b.dataset.ok==="1")b.classList.add("correct");});
-    // 標出正確答案
     [...document.querySelectorAll(".opt")].forEach((b,i)=>{
       if(q.opts[i].ok)b.classList.add("correct");
     });
-    $("qFeed").innerHTML=`❌ 可惜！正確答案已標綠。<br>${q.note||""}`;
+    $("qFeed").innerHTML=`${T().wrong}<br>${q.note||""}`;
     $("quizHearts").textContent="❤️".repeat(Q.hearts)+"🖤".repeat(3-Q.hearts);
   }
   setTimeout(()=>{
@@ -535,8 +657,8 @@ function endQuiz(finished){
   const stars=!finished?"💔":pct>=0.9?"⭐⭐⭐":pct>=0.6?"⭐⭐":"⭐";
   showResult(
     stars,
-    !finished?"三條命用完了……":pct>=0.9?"太厲害了！":"完成挑戰！",
-    `得分 ${Q.score}／${total}${finished?"":`（答到第 ${Q.idx+1} 題）`}<br>獲得經驗值 +${Q.score}`,
+    !finished?T().noLife:pct>=0.9?T().great:T().done,
+    `${T().resScore(Q.score,total)}${finished?"":T().resStopped(Q.idx+1)}<br>${T().resXP(Q.score)}`,
     Q.retry
   );
 }
@@ -547,14 +669,12 @@ function startLetterQuiz(){
   const list=picks.map(L=>{
     const others=shuffle(LETTERS.filter(x=>x.l!==L.l)).slice(0,3);
     if(Math.random()<0.5){
-      // 看字母選讀音
-      return{label:"這個字母怎麼唸？",main:L.u,mainUy:true,
+      return{label:T().letterQ1,main:L.u,mainUy:true,
         opts:shuffle([{html:`${L.l}　<span style="color:var(--dim)">${L.ipa}</span>`,ok:true},
           ...others.map(o=>({html:`${o.l}　<span style="color:var(--dim)">${o.ipa}</span>`,ok:false}))]),
         note:`<span class="uy">${L.u}</span> ＝ ${L.l} ${L.ipa}`};
     }else{
-      // 看讀音選字母
-      return{label:"哪個字母唸這個音？",main:`${L.l}　${L.ipa}`,mainUy:false,
+      return{label:T().letterQ2,main:`${L.l}　${L.ipa}`,mainUy:false,
         opts:shuffle([{html:`<span class="uy">${L.u}</span>`,ok:true},
           ...others.map(o=>({html:`<span class="uy">${o.u}</span>`,ok:false}))]),
         note:`${L.l} ${L.ipa} ＝ <span class="uy">${L.u}</span>`};
@@ -569,12 +689,12 @@ function startWordQuiz(){
   const picks=shuffle(pool).slice(0,Math.min(10,pool.length));
   const list=picks.map(W=>{
     const others=shuffle(pool.filter(x=>x.u!==W.u)).slice(0,3);
-    const note=`<span class="uy">${W.u}</span>（${W.l}）＝ ${W.zh}　📖 第 ${W.les} 課`;
+    const note=`<span class="uy">${W.u}</span>（${W.l}）＝ ${gloss(W)}　${T().lesson(W.les)}`;
     if(Math.random()<0.5){
-      return{label:"這個維吾爾語單字是什麼意思？",main:W.u,mainUy:true,sub:W.l,
-        opts:shuffle([{html:W.zh,ok:true},...others.map(o=>({html:o.zh,ok:false}))]),note};
+      return{label:T().wordQ1,main:W.u,mainUy:true,sub:W.l,
+        opts:shuffle([{html:gloss(W),ok:true},...others.map(o=>({html:gloss(o),ok:false}))]),note};
     }else{
-      return{label:"「"+W.zh+"」的維吾爾語是？",main:W.zh,mainUy:false,
+      return{label:T().wordQ2(gloss(W)),main:gloss(W),mainUy:false,
         opts:shuffle([{html:`<span class="uy">${W.u}</span><br><small style="color:var(--dim)">${W.l}</small>`,ok:true},
           ...others.map(o=>({html:`<span class="uy">${o.u}</span><br><small style="color:var(--dim)">${o.l}</small>`,ok:false}))]),note};
     }
@@ -585,13 +705,13 @@ function startWordQuiz(){
 /* ── 會話挑戰 ── */
 function startDialogue(){
   const list=shuffle(DIALOGUES).map(D=>({
-    label:D.q,
+    label:D.q[lang],
     main:D.qu,mainUy:true,sub:D.ql,
     opts:shuffle([
       {html:`<span class="uy">${D.a.u}</span><br><small style="color:var(--dim)">${D.a.l}</small>`,ok:true},
       ...D.d.map(o=>({html:`<span class="uy">${o.u}</span><br><small style="color:var(--dim)">${o.l}</small>`,ok:false}))
     ]),
-    note:`正解：<span class="uy">${D.a.u}</span>（${D.a.l}）＝「${D.a.zh}」　📖 第 ${D.les} 課`
+    note:`${T().answerIs}<span class="uy">${D.a.u}</span>（${D.a.l}）＝「${D.a[lang]}」　${T().lesson(D.les)}`
   }));
   beginQuiz(list,"dialogue",startDialogue);
 }
@@ -602,11 +722,11 @@ function startMemory(){
   const picks=shuffle(catWords()).slice(0,8);
   const cards=shuffle(picks.flatMap((w,i)=>[
     {key:i,html:`<span class="uy">${w.u}</span>`},
-    {key:i,html:`${w.zh}<br><small style="color:var(--dim)">${w.l}</small>`},
+    {key:i,html:`${gloss(w)}<br><small style="color:var(--dim)">${w.l}</small>`},
   ]));
   M={first:null,lock:false,moves:0,pairs:0};
   $("memMoves").textContent=0;$("memPairs").textContent=0;
-  $("memBoard").innerHTML=cards.map((c,i)=>
+  $("memBoard").innerHTML=cards.map(c=>
     `<div class="tile" data-key="${c.key}" onclick="flipTile(this)">
        <div class="tile-inner">
          <div class="face back">❓</div>
@@ -627,7 +747,7 @@ function flipTile(t){
       const stars=M.moves<=12?"⭐⭐⭐":M.moves<=18?"⭐⭐":"⭐";
       const xp=M.moves<=12?80:M.moves<=18?60:40;
       addXP(xp);
-      setTimeout(()=>showResult(stars,"全部配對成功！",`共翻了 ${M.moves} 次<br>獲得經驗值 +${xp}`,startMemory),600);
+      setTimeout(()=>showResult(stars,T().memDone,`${T().memMoves(M.moves)}<br>${T().resXP(xp)}`,startMemory),600);
     }
   }else{
     M.lock=true;
@@ -643,6 +763,11 @@ function showResult(stars,title,detail,retryFn){
   $("resRetry").onclick=retryFn;
   show("view-result");
 }
+
+/* ═══════════════ 初始化 ═══════════════ */
+lang=detectLang();
+applyLang();
+renderXP();
 </script>
 </body>
 </html>
