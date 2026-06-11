@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大眾維語・學習小遊戲</title>
+<style>
+  :root{
+    --bg1:#1a1a2e; --bg2:#16213e;
+    --card:#0f3460; --accent:#e94560; --gold:#ffd369;
+    --ok:#4ecca3; --bad:#e94560; --text:#eaeaea; --dim:#9aa5c4;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:"PingFang TC","Microsoft JhengHei",sans-serif;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    min-height:100vh;color:var(--text);
+  }
+  .uy{
+    font-family:"Geeza Pro","Noto Naskh Arabic","Arial Unicode MS",serif;
+    direction:rtl;unicode-bidi:isolate;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px;}
+  header{display:flex;justify-content:space-between;align-items:center;padding:10px 0 24px;}
+  header h1{font-size:1.25rem;color:var(--gold);letter-spacing:1px;}
+  .xpbox{background:rgba(255,255,255,.08);border-radius:20px;padding:6px 14px;font-size:.85rem;}
+  .xpbox b{color:var(--gold);}
+
+  /* ── 主選單 ── */
+  .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+  .mcard{
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+    border-radius:16px;padding:22px 18px;cursor:pointer;transition:.18s;
+  }
+  .mcard:hover{transform:translateY(-3px);background:rgba(255,255,255,.12);border-color:var(--gold);}
+  .mcard .emoji{font-size:2rem;}
+  .mcard h2{font-size:1.05rem;margin:10px 0 6px;color:var(--gold);}
+  .mcard p{font-size:.82rem;color:var(--dim);line-height:1.5;}
+  .intro{
+    background:rgba(233,69,96,.12);border:1px solid rgba(233,69,96,.35);
+    border-radius:14px;padding:14px 18px;margin-bottom:20px;font-size:.88rem;line-height:1.7;color:var(--dim);
+  }
+  .intro b{color:var(--text);}
+  .intro .uy{font-size:1.1rem;color:var(--gold);}
+
+  /* ── 共用 ── */
+  .hidden{display:none!important;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:8px;}
+  .btn{
+    background:var(--accent);color:#fff;border:none;border-radius:10px;
+    padding:10px 20px;font-size:.95rem;cursor:pointer;font-family:inherit;transition:.15s;
+  }
+  .btn:hover{filter:brightness(1.15);}
+  .btn.ghost{background:rgba(255,255,255,.12);}
+  .btn.gold{background:var(--gold);color:#1a1a2e;font-weight:700;}
+  .pill{background:rgba(255,255,255,.1);border-radius:20px;padding:5px 14px;font-size:.85rem;}
+  .hearts{color:var(--accent);letter-spacing:2px;}
+  .progress{height:8px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;margin-bottom:22px;}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));width:0;transition:.3s;}
+
+  /* ── 題目 ── */
+  .qcard{
+    background:rgba(255,255,255,.07);border-radius:18px;padding:30px 22px;text-align:center;margin-bottom:20px;
+  }
+  .qcard .label{font-size:.85rem;color:var(--dim);margin-bottom:14px;}
+  .qcard .big{font-size:3.2rem;line-height:1.4;}
+  .qcard .big.uy{font-size:3.6rem;}
+  .qcard .sub{font-size:1rem;color:var(--dim);margin-top:10px;}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:520px){.opts{grid-template-columns:1fr;}}
+  .opt{
+    background:rgba(255,255,255,.08);border:2px solid transparent;border-radius:14px;
+    padding:16px 12px;font-size:1.15rem;cursor:pointer;text-align:center;transition:.15s;color:var(--text);
+    font-family:inherit;
+  }
+  .opt .uy{font-size:1.5rem;}
+  .opt:hover{border-color:var(--gold);}
+  .opt.correct{background:rgba(78,204,163,.25);border-color:var(--ok);}
+  .opt.wrong{background:rgba(233,69,96,.25);border-color:var(--bad);}
+  .opt:disabled{cursor:default;}
+  .feedback{text-align:center;min-height:64px;margin-top:16px;font-size:.95rem;line-height:1.6;}
+  .feedback .uy{color:var(--gold);}
+  .combo{color:var(--gold);font-weight:700;}
+
+  /* ── 翻翻樂 ── */
+  .board{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  @media(max-width:520px){.board{grid-template-columns:repeat(4,1fr);gap:6px;}}
+  .tile{
+    aspect-ratio:3/4;perspective:600px;cursor:pointer;
+  }
+  .tile-inner{
+    position:relative;width:100%;height:100%;transition:transform .35s;transform-style:preserve-3d;
+  }
+  .tile.flip .tile-inner{transform:rotateY(180deg);}
+  .face{
+    position:absolute;inset:0;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    backface-visibility:hidden;padding:6px;text-align:center;
+  }
+  .face.back{background:linear-gradient(135deg,var(--accent),#903749);font-size:1.6rem;}
+  .face.front{background:var(--card);transform:rotateY(180deg);font-size:1rem;line-height:1.3;border:1px solid rgba(255,255,255,.18);}
+  .face.front .uy{font-size:1.25rem;}
+  .tile.done .face.front{background:rgba(78,204,163,.3);border-color:var(--ok);}
+  .tile.done{cursor:default;}
+
+  /* ── 學習頁 ── */
+  .grid-letters{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+  .lcard{
+    background:rgba(255,255,255,.07);border-radius:12px;padding:14px 10px;text-align:center;
+  }
+  .lcard .uy{font-size:2.2rem;color:var(--gold);display:block;}
+  .lcard .latin{font-size:1rem;margin-top:4px;}
+  .lcard .ipa{font-size:.8rem;color:var(--dim);}
+  .wbsec h3{color:var(--gold);margin:22px 0 10px;font-size:1rem;}
+  table.wb{width:100%;border-collapse:collapse;}
+  table.wb td{padding:8px 6px;border-bottom:1px solid rgba(255,255,255,.08);font-size:.95rem;}
+  table.wb td.uy{font-size:1.35rem;text-align:right;width:34%;color:var(--gold);}
+  table.wb td.latin{color:var(--dim);width:30%;}
+
+  /* ── 類別選擇 ── */
+  .cats{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 20px;}
+  .cat{
+    background:rgba(255,255,255,.08);border:2px solid transparent;border-radius:20px;
+    padding:8px 18px;cursor:pointer;font-size:.9rem;color:var(--text);font-family:inherit;
+  }
+  .cat.sel{border-color:var(--gold);background:rgba(255,211,105,.15);}
+
+  /* ── 結果 ── */
+  .result{text-align:center;padding:50px 20px;}
+  .result .stars{font-size:3rem;letter-spacing:6px;margin:14px 0;}
+  .result h2{font-size:1.6rem;color:var(--gold);}
+  .result p{color:var(--dim);margin:12px 0 26px;line-height:1.8;}
+  .pop{animation:pop .4s ease;}
+  @keyframes pop{0%{transform:scale(.6);opacity:0;}100%{transform:scale(1);opacity:1;}}
+  .shake{animation:shake .3s;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>📚 大眾維語・學習小遊戲</h1>
+    <div class="xpbox">⭐ 經驗值 <b id="xpVal">0</b>｜Lv.<b id="lvVal">1</b></div>
+  </header>
+
+  <!-- ════ 主選單 ════ -->
+  <div id="view-home">
+    <div class="intro">
+      <b>ياخشىمۇسىز؟</b>（Yaxshimusiz? 您好嗎？）<br>
+      本遊戲內容取自《大眾維語》（新疆大學出版社）第 1～25 課：32 個字母、約 100 個生詞與常用會話。
+      建議順序：先到「字母表」和「單字本」預習，再開始挑戰！
+    </div>
+    <div class="menu">
+      <div class="mcard" onclick="showStudyLetters()">
+        <div class="emoji">📖</div><h2>字母表（預習）</h2>
+        <p>瀏覽 32 個維吾爾文字母、拉丁轉寫與國際音標。對應課本第 1～12 課。</p>
+      </div>
+      <div class="mcard" onclick="showWordbook()">
+        <div class="emoji">📒</div><h2>單字本（預習）</h2>
+        <p>依主題瀏覽課本生詞：家人、職業、物品、數字、時間……</p>
+      </div>
+      <div class="mcard" onclick="startLetterQuiz()">
+        <div class="emoji">🔠</div><h2>字母挑戰</h2>
+        <p>看字母選讀音、看讀音選字母，共 10 題。熟記字母是第一步！</p>
+      </div>
+      <div class="mcard" onclick="showCatPick('quiz')">
+        <div class="emoji">✏️</div><h2>單字測驗</h2>
+        <p>維譯中、中譯維混合選擇題，有三條命，連對有加分！</p>
+      </div>
+      <div class="mcard" onclick="showCatPick('memory')">
+        <div class="emoji">🃏</div><h2>單字翻翻樂</h2>
+        <p>翻牌配對：維吾爾文 ↔ 中文。翻次越少星星越多！</p>
+      </div>
+      <div class="mcard" onclick="startDialogue()">
+        <div class="emoji">💬</div><h2>會話挑戰</h2>
+        <p>情境對話題：有人跟你打招呼，你該怎麼回？對應第 13～25 課。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ 字母表 ════ -->
+  <div id="view-letters" class="hidden">
+    <div class="topbar">
+      <button class="btn ghost" onclick="goHome()">← 回主選單</button>
+      <span class="pill">維吾爾文 32 字母（第 1～12 課）</span>
+    </div>
+    <div class="grid-letters" id="letterGrid"></div>
+  </div>
+
+  <!-- ════ 單字本 ════ -->
+  <div id="view-wordbook" class="hidden">
+    <div class="topbar">
+      <button class="btn ghost" onclick="goHome()">← 回主選單</button>
+      <span class="pill">課本生詞（第 13～25 課）</span>
+    </div>
+    <div id="wordbookBody"></div>
+  </div>
+
+  <!-- ════ 類別選擇 ════ -->
+  <div id="view-cat" class="hidden">
+    <div class="topbar">
+      <button class="btn ghost" onclick="goHome()">← 回主選單</button>
+      <span class="pill" id="catTitle"></span>
+    </div>
+    <p style="color:var(--dim);margin-bottom:8px;">選一個單字範圍：</p>
+    <div class="cats" id="catList"></div>
+    <button class="btn gold" id="catGo">開始！</button>
+  </div>
+
+  <!-- ════ 測驗（字母／單字／會話共用） ════ -->
+  <div id="view-quiz" class="hidden">
+    <div class="topbar">
+      <button class="btn ghost" onclick="goHome()">✕ 放棄</button>
+      <span class="pill" id="quizInfo"></span>
+      <span class="pill hearts" id="quizHearts"></span>
+      <span class="pill">得分 <b id="quizScore">0</b></span>
+    </div>
+    <div class="progress"><i id="quizProg"></i></div>
+    <div class="qcard">
+      <div class="label" id="qLabel"></div>
+      <div class="big" id="qMain"></div>
+      <div class="sub" id="qSub"></div>
+    </div>
+    <div class="opts" id="qOpts"></div>
+    <div class="feedback" id="qFeed"></div>
+  </div>
+
+  <!-- ════ 翻翻樂 ════ -->
+  <div id="view-memory" class="hidden">
+    <div class="topbar">
+      <button class="btn ghost" onclick="goHome()">✕ 放棄</button>
+      <span class="pill">翻牌數 <b id="memMoves">0</b></span>
+      <span class="pill">已配對 <b id="memPairs">0</b>／8</span>
+    </div>
+    <div class="board" id="memBoard"></div>
+  </div>
+
+  <!-- ════ 結果 ════ -->
+  <div id="view-result" class="hidden">
+    <div class="result pop">
+      <div class="stars" id="resStars"></div>
+      <h2 id="resTitle"></h2>
+      <p id="resDetail"></p>
+      <button class="btn gold" id="resRetry">再玩一次</button>
+      <button class="btn ghost" onclick="goHome()">回主選單</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════ 資料：取自《大眾維語》第 1～25 課 ═══════════════ */
+
+// 32 個字母（第 1～12 課字母表：字形、拉丁轉寫、國際音標）
+const LETTERS=[
+  {u:"ئا",l:"a",ipa:"[a]"},   {u:"ئە",l:"e",ipa:"[ɛ]"},
+  {u:"ب",l:"b",ipa:"[b]"},    {u:"پ",l:"p",ipa:"[p]"},
+  {u:"ت",l:"t",ipa:"[t]"},    {u:"ج",l:"j",ipa:"[dʒ]"},
+  {u:"چ",l:"ch",ipa:"[tʃ]"},  {u:"خ",l:"x",ipa:"[x]"},
+  {u:"د",l:"d",ipa:"[d]"},    {u:"ر",l:"r",ipa:"[r]"},
+  {u:"ز",l:"z",ipa:"[z]"},    {u:"ژ",l:"zh",ipa:"[ʒ]"},
+  {u:"س",l:"s",ipa:"[s]"},    {u:"ش",l:"sh",ipa:"[ʃ]"},
+  {u:"غ",l:"gh",ipa:"[ʁ]"},   {u:"ف",l:"f",ipa:"[f]"},
+  {u:"ق",l:"q",ipa:"[q]"},    {u:"ك",l:"k",ipa:"[k]"},
+  {u:"گ",l:"g",ipa:"[g]"},    {u:"ڭ",l:"ng",ipa:"[ŋ]"},
+  {u:"ل",l:"l",ipa:"[l]"},    {u:"م",l:"m",ipa:"[m]"},
+  {u:"ن",l:"n",ipa:"[n]"},    {u:"ھ",l:"h",ipa:"[h]"},
+  {u:"ئو",l:"o",ipa:"[o]"},   {u:"ئۇ",l:"u",ipa:"[u]"},
+  {u:"ئۆ",l:"ö",ipa:"[ø]"},   {u:"ئۈ",l:"ü",ipa:"[y]"},
+  {u:"ۋ",l:"w",ipa:"[v]"},    {u:"ئې",l:"ë",ipa:"[e]"},
+  {u:"ئى",l:"i",ipa:"[i]"},   {u:"ي",l:"y",ipa:"[j]"},
+];
+
+// 生詞（u 維文、l 拉丁、zh 中文、les 課別）
+const WORDS={
+  "家人與人物":[
+    {u:"ئانا",l:"ana",zh:"母親",les:2},
+    {u:"ئاتا",l:"ata",zh:"父親",les:3},
+    {u:"دادا",l:"dada",zh:"爸爸",les:3},
+    {u:"ئاپا",l:"apa",zh:"媽媽",les:17},
+    {u:"بالا",l:"bala",zh:"孩子",les:16},
+    {u:"ئاكا",l:"aka",zh:"哥哥",les:16},
+    {u:"ئايال",l:"ayal",zh:"妻子；女人",les:23},
+    {u:"ئوغۇل",l:"oghul",zh:"兒子",les:23},
+    {u:"قىز",l:"qiz",zh:"女兒；姑娘",les:23},
+    {u:"نەۋرە",l:"newre",zh:"孫子",les:23},
+    {u:"ئائىلە",l:"a'ile",zh:"家庭",les:3},
+    {u:"دوست",l:"dost",zh:"朋友",les:17},
+    {u:"كىشى",l:"kishi",zh:"人",les:22},
+  ],
+  "職業":[
+    {u:"دوختۇر",l:"doxtur",zh:"醫生",les:14},
+    {u:"ئوقۇغۇچى",l:"oqughuchi",zh:"學生",les:14},
+    {u:"مۇئەللىم",l:"mu'ellim",zh:"老師",les:15},
+    {u:"تەرجىمان",l:"terjiman",zh:"翻譯；譯員",les:14},
+    {u:"شوپۇر",l:"shopur",zh:"司機",les:14},
+    {u:"ئىشچى",l:"ishchi",zh:"工人",les:14},
+    {u:"دېھقان",l:"dëhqan",zh:"農民",les:15},
+    {u:"كادىر",l:"kadir",zh:"幹部",les:15},
+    {u:"خىزمەتچى",l:"xizmetchi",zh:"職工",les:15},
+  ],
+  "物品":[
+    {u:"كىتاب",l:"kitab",zh:"書",les:13},
+    {u:"لۇغەت",l:"lughet",zh:"詞典",les:13},
+    {u:"قەلەم",l:"qelem",zh:"筆",les:13},
+    {u:"قەغەز",l:"qeghez",zh:"紙",les:15},
+    {u:"گېزىت",l:"gëzit",zh:"報紙",les:13},
+    {u:"تېلېفون",l:"tëlëfon",zh:"電話",les:13},
+    {u:"سائەت",l:"sa'et",zh:"手錶；時鐘",les:13},
+    {u:"ماشىنا",l:"mashina",zh:"汽車；機器",les:13},
+    {u:"ئاپتوبۇس",l:"aptobus",zh:"公共汽車",les:16},
+    {u:"ھۆججەت",l:"höjjet",zh:"文件",les:15},
+    {u:"بېلەت",l:"bëlet",zh:"車票",les:25},
+    {u:"ئورۇندۇق",l:"orunduq",zh:"座位",les:25},
+    {u:"چاپان",l:"chapan",zh:"袷袢（外衣）",les:25},
+    {u:"ئاياغ",l:"ayagh",zh:"鞋；腳",les:25},
+    {u:"ئۆي",l:"öy",zh:"房子；家",les:17},
+    {u:"ئالما",l:"alma",zh:"蘋果",les:16},
+    {u:"تىل",l:"til",zh:"語言；舌頭",les:3},
+    {u:"دوختۇرخانا",l:"doxturxana",zh:"醫院",les:23},
+    {u:"رېستۇران",l:"rëstoran",zh:"餐廳",les:24},
+    {u:"تاماكا",l:"tamaka",zh:"香菸",les:13},
+  ],
+  "數字":[
+    {u:"بىر",l:"bir",zh:"一",les:23},
+    {u:"ئىككى",l:"ikki",zh:"二",les:23},
+    {u:"ئۈچ",l:"üch",zh:"三",les:23},
+    {u:"تۆت",l:"töt",zh:"四",les:23},
+    {u:"بەش",l:"besh",zh:"五",les:23},
+    {u:"ئالتە",l:"alte",zh:"六",les:23},
+    {u:"يەتتە",l:"yette",zh:"七",les:23},
+    {u:"سەككىز",l:"sekkiz",zh:"八",les:23},
+    {u:"توققۇز",l:"toqquz",zh:"九",les:23},
+    {u:"ئون",l:"on",zh:"十",les:23},
+    {u:"يىگىرمە",l:"yigirme",zh:"二十",les:23},
+    {u:"ئوتتۇز",l:"ottuz",zh:"三十",les:23},
+    {u:"قىرىق",l:"qiriq",zh:"四十",les:23},
+    {u:"ئەللىك",l:"ellik",zh:"五十",les:23},
+    {u:"يۈز",l:"yüz",zh:"一百",les:23},
+    {u:"مىڭ",l:"ming",zh:"一千",les:23},
+  ],
+  "時間":[
+    {u:"بۈگۈن",l:"bügün",zh:"今天",les:24},
+    {u:"ئەتە",l:"ete",zh:"明天",les:3},
+    {u:"تۈنۈگۈن",l:"tünügün",zh:"昨天",les:24},
+    {u:"يىل",l:"yil",zh:"年",les:24},
+    {u:"ئاي",l:"ay",zh:"月",les:24},
+    {u:"كۈن",l:"kün",zh:"日；天",les:24},
+    {u:"ھەپتە",l:"hepte",zh:"星期；週",les:24},
+    {u:"بايرام",l:"bayram",zh:"節日",les:24},
+    {u:"دۈشەنبە",l:"düshenbe",zh:"星期一",les:24},
+    {u:"سەيشەنبە",l:"seyshenbe",zh:"星期二",les:24},
+    {u:"چارشەنبە",l:"charshenbe",zh:"星期三",les:24},
+    {u:"پەيشەنبە",l:"peyshenbe",zh:"星期四",les:24},
+    {u:"جۈمە",l:"jüme",zh:"星期五",les:24},
+    {u:"شەنبە",l:"shenbe",zh:"星期六",les:24},
+    {u:"يەكشەنبە",l:"yekshenbe",zh:"星期日",les:24},
+  ],
+  "代詞與問句":[
+    {u:"مەن",l:"men",zh:"我",les:14},
+    {u:"سەن",l:"sen",zh:"你",les:14},
+    {u:"سىز",l:"siz",zh:"您",les:14},
+    {u:"ئۇ",l:"u",zh:"他／她；那",les:13},
+    {u:"بىز",l:"biz",zh:"我們",les:14},
+    {u:"سىلەر",l:"siler",zh:"你們",les:17},
+    {u:"ئۇلار",l:"ular",zh:"他們",les:14},
+    {u:"بۇ",l:"bu",zh:"這",les:13},
+    {u:"ماۋۇ",l:"mawu",zh:"這個",les:13},
+    {u:"ئاۋۇ",l:"awu",zh:"那個",les:13},
+    {u:"نېمە",l:"nëme",zh:"什麼",les:13},
+    {u:"كىم",l:"kim",zh:"誰",les:14},
+    {u:"ئىسىم",l:"isim",zh:"名字",les:16},
+    {u:"مىللەت",l:"millet",zh:"民族",les:21},
+    {u:"ئۇيغۇر",l:"Uyghur",zh:"維吾爾（族）",les:21},
+    {u:"خەنزۇ",l:"Xenzu",zh:"漢族",les:21},
+    {u:"ياش",l:"yash",zh:"歲；年輕",les:21},
+  ],
+  "形容詞與常用詞":[
+    {u:"ياخشى",l:"yaxshi",zh:"好",les:22},
+    {u:"يېڭى",l:"yëngi",zh:"新",les:15},
+    {u:"كونا",l:"kona",zh:"舊",les:15},
+    {u:"يىراق",l:"yiraq",zh:"遠",les:17},
+    {u:"ئاددىي",l:"addiy",zh:"簡單",les:3},
+    {u:"ئالدىراش",l:"aldirash",zh:"忙",les:22},
+    {u:"سالامەت",l:"salamet",zh:"健康",les:22},
+    {u:"تىنچلىق",l:"tinchliq",zh:"平安",les:22},
+    {u:"مېھماندوست",l:"mëhmandost",zh:"好客",les:21},
+    {u:"بەك",l:"bek",zh:"很；非常",les:21},
+    {u:"دائىم",l:"da'im",zh:"經常",les:21},
+    {u:"بىللە",l:"bille",zh:"一起",les:21},
+    {u:"ھەئە",l:"he'e",zh:"是的",les:15},
+    {u:"ياق",l:"yaq",zh:"不",les:15},
+    {u:"ئەمەس",l:"emes",zh:"不是",les:15},
+    {u:"بار",l:"bar",zh:"有",les:23},
+  ],
+};
+
+// 會話挑戰（第 13～25 課課文與注釋）
+const DIALOGUES=[
+  {q:"有人見面跟你打招呼：",qu:"ياخشىمۇسىز؟",ql:"Yaxshimusiz?（您好嗎？）",
+   a:{u:"ياخشى، ئۆزىڭىزچۇ؟",l:"Yaxshi, özingizchu?",zh:"好，您呢？"},
+   d:[{u:"بۇ كىتاب.",l:"Bu kitab.",zh:"這是書。"},{u:"ياق، ئەمەس.",l:"Yaq, emes.",zh:"不，不是。"},{u:"مەن ئادىل.",l:"Men Adil.",zh:"我是阿迪里。"}],les:22},
+  {q:"對方指著東西問：بۇ نېمە؟（Bu nëme? 這是什麼？）你想回答「這是詞典」：",qu:"بۇ نېمە؟",ql:"Bu nëme?",
+   a:{u:"بۇ لۇغەت.",l:"Bu lughet.",zh:"這是詞典。"},
+   d:[{u:"ئۇ دوختۇر.",l:"U doxtur.",zh:"他是醫生。"},{u:"مەن ئوقۇغۇچى.",l:"Men oqughuchi.",zh:"我是學生。"},{u:"بۇ كىم؟",l:"Bu kim?",zh:"這是誰？"}],les:13},
+  {q:"對方問：سىز كىم؟（Siz kim? 您是誰？）你想回答「我是買買提」：",qu:"سىز كىم؟",ql:"Siz kim?",
+   a:{u:"مەن مەمەت.",l:"Men Memet.",zh:"我是買買提。"},
+   d:[{u:"ئۇ مەمەت.",l:"U Memet.",zh:"他是買買提。"},{u:"بۇ قەلەم.",l:"Bu qelem.",zh:"這是筆。"},{u:"سىز ياخشى.",l:"Siz yaxshi.",zh:"您好（您很好）。"}],les:14},
+  {q:"朋友問：ئۇ كىم؟（U kim? 他是誰？）你想說「他是醫生」：",qu:"ئۇ كىم؟",ql:"U kim?",
+   a:{u:"ئۇ دوختۇر.",l:"U doxtur.",zh:"他是醫生。"},
+   d:[{u:"بۇ ماشىنا.",l:"Bu mashina.",zh:"這是汽車。"},{u:"مەن دوختۇر.",l:"Men doxtur.",zh:"我是醫生。"},{u:"ئۇلار ئىشچىلار.",l:"Ular ishchilar.",zh:"他們是工人。"}],les:14},
+  {q:"對方問：سىز قەيەرلىك؟（Siz qeyerlik? 您是哪裡人？）你想說「我是喀什人」：",qu:"سىز قەيەرلىك؟",ql:"Siz qeyerlik?",
+   a:{u:"مەن قەشقەرلىك.",l:"Men Qeshqerlik.",zh:"我是喀什人。"},
+   d:[{u:"مەن ئوقۇغۇچى.",l:"Men oqughuchi.",zh:"我是學生。"},{u:"بۇ يىراق ئەمەس.",l:"Bu yiraq emes.",zh:"這不遠。"},{u:"ئۇ قەشقەرلىك.",l:"U Qeshqerlik.",zh:"他是喀什人。"}],les:17},
+  {q:"對方問：بۇ كىتابمۇ؟（Bu kitabmu? 這是書嗎？）你想回答「是的，這是書」：",qu:"بۇ كىتابمۇ؟",ql:"Bu kitabmu?",
+   a:{u:"ھەئە، بۇ كىتاب.",l:"He'e, bu kitab.",zh:"是的，這是書。"},
+   d:[{u:"ياق، بۇ كىتاب.",l:"Yaq, bu kitab.",zh:"不，這是書。（矛盾）"},{u:"ھەئە، بۇ قەغەز ئەمەس.",l:"He'e, bu qeghez emes.",zh:"是的，這不是紙。（答非所問）"},{u:"بۇ نېمە؟",l:"Bu nëme?",zh:"這是什麼？"}],les:15},
+  {q:"你想否認：「不，這不是紙。」（否定用 ئەمەس emes，第 15 課）",qu:"بۇ قەغەزمۇ؟",ql:"Bu qeghezmu?（這是紙嗎？）",
+   a:{u:"ياق، بۇ قەغەز ئەمەس.",l:"Yaq, bu qeghez emes.",zh:"不，這不是紙。"},
+   d:[{u:"ھەئە، بۇ قەغەز.",l:"He'e, bu qeghez.",zh:"是的，這是紙。"},{u:"ياق، بۇ قەغەز.",l:"Yaq, bu qeghez.",zh:"不，這是紙。（矛盾）"},{u:"بۇ يېڭى قەغەز.",l:"Bu yëngi qeghez.",zh:"這是新紙。"}],les:15},
+  {q:"對方關心地問：ئالدىراشمۇ سىز؟（您忙嗎？）你想回「不太忙」（ئانچە anche 只用於否定，第 22 課）：",qu:"ئالدىراشمۇ سىز؟",ql:"Aldirashmu siz?",
+   a:{u:"ئانچە ئەمەس.",l:"Anche emes.",zh:"不怎麼忙。"},
+   d:[{u:"بەك ياخشى.",l:"Bek yaxshi.",zh:"很好。（答非所問）"},{u:"ھەئە، ئانچە.",l:"He'e, anche.",zh:"（ئانچە 不能單獨肯定用）"},{u:"مەن ئالدىراش ئەمەس ئەمەس.",l:"Men aldirash emes emes.",zh:"（雙重否定，不通）"}],les:22},
+  {q:"朋友問：بۈگۈن كۈنگە نېمە؟（今天星期幾？）你想說「今天星期日」：",qu:"بۈگۈن كۈنگە نېمە؟",ql:"Bügün kün'ge nëme?",
+   a:{u:"بۈگۈن كۈنگە يەكشەنبە.",l:"Bügün kün'ge yekshenbe.",zh:"今天星期日。"},
+   d:[{u:"بۈگۈن بايرام ئەمەس.",l:"Bügün bayram emes.",zh:"今天不是節日。"},{u:"ئەتە جۈمە.",l:"Ete jüme.",zh:"明天星期五。"},{u:"تۈنۈگۈن شەنبە.",l:"Tünügün shenbe.",zh:"昨天星期六。"}],les:24},
+  {q:"對方問候：ئۆي ئىچىڭىز تىنچلىقمۇ؟（家裡人都平安嗎？）你想回「都平安」：",qu:"ئۆي ئىچىڭىز تىنچلىقمۇ؟",ql:"Öy ichingiz tinchliqmu?",
+   a:{u:"تىنچلىق.",l:"Tinchliq.",zh:"都平安。"},
+   d:[{u:"يىراق.",l:"Yiraq.",zh:"很遠。（答非所問）"},{u:"ئۇ دوختۇرخانىدا.",l:"U doxturxanida.",zh:"他在醫院。（答非所問）"},{u:"بۇ ئۆي.",l:"Bu öy.",zh:"這是房子。"}],les:22},
+];
+
+/* ═══════════════ 共用工具 ═══════════════ */
+const $=id=>document.getElementById(id);
+const VIEWS=["view-home","view-letters","view-wordbook","view-cat","view-quiz","view-memory","view-result"];
+function show(v){VIEWS.forEach(x=>$(x).classList.toggle("hidden",x!==v));window.scrollTo(0,0);}
+function goHome(){show("view-home");}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function allWords(){return Object.values(WORDS).flat();}
+
+/* ── 經驗值（localStorage 不可用時改用記憶體，例如沙盒預覽環境） ── */
+let memXP=0;
+function getXP(){try{return +(localStorage.getItem("uyghurXP")||0);}catch(e){return memXP;}}
+function addXP(n){const v=getXP()+n;try{localStorage.setItem("uyghurXP",v);}catch(e){memXP=v;}renderXP();}
+function renderXP(){$("xpVal").textContent=getXP();$("lvVal").textContent=Math.floor(getXP()/100)+1;}
+try{renderXP();}catch(e){}
+
+/* ═══════════════ 字母表（預習） ═══════════════ */
+function showStudyLetters(){
+  $("letterGrid").innerHTML=LETTERS.map((x,i)=>
+    `<div class="lcard"><span style="font-size:.7rem;color:var(--dim);">${i+1}</span>
+     <span class="uy">${x.u}</span>
+     <div class="latin">${x.l}</div><div class="ipa">${x.ipa}</div></div>`).join("");
+  show("view-letters");
+}
+
+/* ═══════════════ 單字本（預習） ═══════════════ */
+function showWordbook(){
+  $("wordbookBody").innerHTML=Object.entries(WORDS).map(([cat,ws])=>
+    `<div class="wbsec"><h3>${cat}（${ws.length} 個）</h3><table class="wb">`+
+    ws.map(w=>`<tr><td class="uy">${w.u}</td><td class="latin">${w.l}</td><td>${w.zh}<span style="color:var(--dim);font-size:.78rem;">　第${w.les}課</span></td></tr>`).join("")+
+    `</table></div>`).join("");
+  show("view-wordbook");
+}
+
+/* ═══════════════ 類別選擇 ═══════════════ */
+let pendingMode=null,selectedCat="全部";
+function showCatPick(mode){
+  pendingMode=mode;selectedCat="全部";
+  $("catTitle").textContent=mode==="quiz"?"✏️ 單字測驗":"🃏 單字翻翻樂";
+  const cats=["全部",...Object.keys(WORDS)];
+  $("catList").innerHTML=cats.map(c=>
+    `<button class="cat${c==="全部"?" sel":""}" onclick="pickCat(this,'${c}')">${c}</button>`).join("");
+  $("catGo").onclick=()=>pendingMode==="quiz"?startWordQuiz():startMemory();
+  show("view-cat");
+}
+function pickCat(el,c){
+  selectedCat=c;
+  document.querySelectorAll(".cat").forEach(b=>b.classList.remove("sel"));
+  el.classList.add("sel");
+}
+function catWords(){return selectedCat==="全部"?allWords():WORDS[selectedCat];}
+
+/* ═══════════════ 測驗引擎（字母／單字／會話共用） ═══════════════ */
+let Q={list:[],idx:0,score:0,hearts:3,combo:0,mode:"",retry:null};
+
+function beginQuiz(list,mode,retryFn){
+  Q={list,idx:0,score:0,hearts:3,combo:0,mode,retry:retryFn};
+  show("view-quiz");renderQ();
+}
+function renderQ(){
+  const q=Q.list[Q.idx];
+  $("quizInfo").textContent=`第 ${Q.idx+1}／${Q.list.length} 題`;
+  $("quizHearts").textContent="❤️".repeat(Q.hearts)+"🖤".repeat(3-Q.hearts);
+  $("quizScore").textContent=Q.score;
+  $("quizProg").style.width=(Q.idx/Q.list.length*100)+"%";
+  $("qLabel").textContent=q.label;
+  $("qMain").innerHTML=q.main;
+  $("qMain").className="big"+(q.mainUy?" uy":"");
+  $("qSub").innerHTML=q.sub||"";
+  $("qFeed").innerHTML="";
+  $("qOpts").innerHTML="";
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement("button");
+    b.className="opt";b.innerHTML=o.html;
+    b.onclick=()=>answer(b,o.ok,q);
+    $("qOpts").appendChild(b);
+  });
+}
+function answer(btn,ok,q){
+  document.querySelectorAll(".opt").forEach(b=>b.disabled=true);
+  if(ok){
+    btn.classList.add("correct");
+    Q.combo++;const bonus=Q.combo>=3?5:0;
+    Q.score+=10+bonus;addXP(10+bonus);
+    $("qFeed").innerHTML=`✅ 答對了！${bonus?`<span class="combo">🔥 連對 ${Q.combo} 題，加 ${bonus} 分！</span>`:""}<br>${q.note||""}`;
+  }else{
+    btn.classList.add("wrong");btn.classList.add("shake");
+    Q.combo=0;Q.hearts--;
+    document.querySelectorAll(".opt").forEach(b=>{if(b.dataset.ok==="1")b.classList.add("correct");});
+    // 標出正確答案
+    [...document.querySelectorAll(".opt")].forEach((b,i)=>{
+      if(q.opts[i].ok)b.classList.add("correct");
+    });
+    $("qFeed").innerHTML=`❌ 可惜！正確答案已標綠。<br>${q.note||""}`;
+    $("quizHearts").textContent="❤️".repeat(Q.hearts)+"🖤".repeat(3-Q.hearts);
+  }
+  setTimeout(()=>{
+    if(Q.hearts<=0)return endQuiz(false);
+    Q.idx++;
+    if(Q.idx>=Q.list.length)return endQuiz(true);
+    renderQ();
+  },ok?1400:2600);
+}
+function endQuiz(finished){
+  const total=Q.list.length*10;
+  const pct=Q.score/total;
+  const stars=!finished?"💔":pct>=0.9?"⭐⭐⭐":pct>=0.6?"⭐⭐":"⭐";
+  showResult(
+    stars,
+    !finished?"三條命用完了……":pct>=0.9?"太厲害了！":"完成挑戰！",
+    `得分 ${Q.score}／${total}${finished?"":`（答到第 ${Q.idx+1} 題）`}<br>獲得經驗值 +${Q.score}`,
+    Q.retry
+  );
+}
+
+/* ── 字母挑戰 ── */
+function startLetterQuiz(){
+  const picks=shuffle(LETTERS).slice(0,10);
+  const list=picks.map(L=>{
+    const others=shuffle(LETTERS.filter(x=>x.l!==L.l)).slice(0,3);
+    if(Math.random()<0.5){
+      // 看字母選讀音
+      return{label:"這個字母怎麼唸？",main:L.u,mainUy:true,
+        opts:shuffle([{html:`${L.l}　<span style="color:var(--dim)">${L.ipa}</span>`,ok:true},
+          ...others.map(o=>({html:`${o.l}　<span style="color:var(--dim)">${o.ipa}</span>`,ok:false}))]),
+        note:`<span class="uy">${L.u}</span> ＝ ${L.l} ${L.ipa}`};
+    }else{
+      // 看讀音選字母
+      return{label:"哪個字母唸這個音？",main:`${L.l}　${L.ipa}`,mainUy:false,
+        opts:shuffle([{html:`<span class="uy">${L.u}</span>`,ok:true},
+          ...others.map(o=>({html:`<span class="uy">${o.u}</span>`,ok:false}))]),
+        note:`${L.l} ${L.ipa} ＝ <span class="uy">${L.u}</span>`};
+    }
+  });
+  beginQuiz(list,"letter",startLetterQuiz);
+}
+
+/* ── 單字測驗 ── */
+function startWordQuiz(){
+  const pool=catWords();
+  const picks=shuffle(pool).slice(0,Math.min(10,pool.length));
+  const list=picks.map(W=>{
+    const others=shuffle(pool.filter(x=>x.u!==W.u)).slice(0,3);
+    const note=`<span class="uy">${W.u}</span>（${W.l}）＝ ${W.zh}　📖 第 ${W.les} 課`;
+    if(Math.random()<0.5){
+      return{label:"這個維吾爾語單字是什麼意思？",main:W.u,mainUy:true,sub:W.l,
+        opts:shuffle([{html:W.zh,ok:true},...others.map(o=>({html:o.zh,ok:false}))]),note};
+    }else{
+      return{label:"「"+W.zh+"」的維吾爾語是？",main:W.zh,mainUy:false,
+        opts:shuffle([{html:`<span class="uy">${W.u}</span><br><small style="color:var(--dim)">${W.l}</small>`,ok:true},
+          ...others.map(o=>({html:`<span class="uy">${o.u}</span><br><small style="color:var(--dim)">${o.l}</small>`,ok:false}))]),note};
+    }
+  });
+  beginQuiz(list,"word",startWordQuiz);
+}
+
+/* ── 會話挑戰 ── */
+function startDialogue(){
+  const list=shuffle(DIALOGUES).map(D=>({
+    label:D.q,
+    main:D.qu,mainUy:true,sub:D.ql,
+    opts:shuffle([
+      {html:`<span class="uy">${D.a.u}</span><br><small style="color:var(--dim)">${D.a.l}</small>`,ok:true},
+      ...D.d.map(o=>({html:`<span class="uy">${o.u}</span><br><small style="color:var(--dim)">${o.l}</small>`,ok:false}))
+    ]),
+    note:`正解：<span class="uy">${D.a.u}</span>（${D.a.l}）＝「${D.a.zh}」　📖 第 ${D.les} 課`
+  }));
+  beginQuiz(list,"dialogue",startDialogue);
+}
+
+/* ═══════════════ 翻翻樂 ═══════════════ */
+let M={first:null,lock:false,moves:0,pairs:0};
+function startMemory(){
+  const picks=shuffle(catWords()).slice(0,8);
+  const cards=shuffle(picks.flatMap((w,i)=>[
+    {key:i,html:`<span class="uy">${w.u}</span>`},
+    {key:i,html:`${w.zh}<br><small style="color:var(--dim)">${w.l}</small>`},
+  ]));
+  M={first:null,lock:false,moves:0,pairs:0};
+  $("memMoves").textContent=0;$("memPairs").textContent=0;
+  $("memBoard").innerHTML=cards.map((c,i)=>
+    `<div class="tile" data-key="${c.key}" onclick="flipTile(this)">
+       <div class="tile-inner">
+         <div class="face back">❓</div>
+         <div class="face front">${c.html}</div>
+       </div></div>`).join("");
+  show("view-memory");
+}
+function flipTile(t){
+  if(M.lock||t.classList.contains("flip")||t.classList.contains("done"))return;
+  t.classList.add("flip");
+  if(!M.first){M.first=t;return;}
+  M.moves++;$("memMoves").textContent=M.moves;
+  const a=M.first,b=t;M.first=null;
+  if(a.dataset.key===b.dataset.key){
+    a.classList.add("done");b.classList.add("done");
+    M.pairs++;$("memPairs").textContent=M.pairs;
+    if(M.pairs===8){
+      const stars=M.moves<=12?"⭐⭐⭐":M.moves<=18?"⭐⭐":"⭐";
+      const xp=M.moves<=12?80:M.moves<=18?60:40;
+      addXP(xp);
+      setTimeout(()=>showResult(stars,"全部配對成功！",`共翻了 ${M.moves} 次<br>獲得經驗值 +${xp}`,startMemory),600);
+    }
+  }else{
+    M.lock=true;
+    setTimeout(()=>{a.classList.remove("flip");b.classList.remove("flip");M.lock=false;},900);
+  }
+}
+
+/* ═══════════════ 結果頁 ═══════════════ */
+function showResult(stars,title,detail,retryFn){
+  $("resStars").textContent=stars;
+  $("resTitle").textContent=title;
+  $("resDetail").innerHTML=detail;
+  $("resRetry").onclick=retryFn;
+  show("view-result");
+}
+</script>
+</body>
+</html>
